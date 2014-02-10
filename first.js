@@ -18,15 +18,25 @@ function Game(ctx) {
 	var ctx = ctx;
 	var field = new Field(GAME_WIDTH, GAME_HEIGHT);
 	var paddle = new Paddle(new Point(0, GAME_HEIGHT - 15)); // FIXME hardcoded paddle height :)
+	var ball = new Ball(new Point(50, 50));
 
 	this.tick = function(delta) {
 		update(delta);
 		field.draw(ctx);
 		paddle.draw(ctx);
+		ball.draw(ctx);
 	}
 
 	var update = function(delta) {
 		movePaddleIfKeyDown(delta);	
+		moveBall(delta);
+	}
+
+	var moveBall = function(delta) {
+		var howFar = (delta / 1000) * ball.speed();
+		x = Math.cos(ball.direction) * howFar;
+		y = Math.sin(ball.direction) * howFar;
+		ball.move(x, y);
 	}
 
 	var movePaddleIfKeyDown = function(delta) {
@@ -56,6 +66,26 @@ function Game(ctx) {
 	}
 }
 
+function Ball(startPos) {
+	var RADIUS = 3;
+	var BALL_SPEED = 200;
+	this.pos = startPos;
+	this.direction = Math.PI / 4;
+
+	Ball.prototype.draw = function(ctx) {
+		ctx.beginPath();
+		ctx.arc(this.pos.x, this.pos.y, RADIUS, 0, Math.PI*2);
+		ctx.fill();
+	}
+
+	Ball.prototype.move = function(x, y) {
+		this.pos = new Point(this.pos.x + x, this.pos.y + y);
+	}
+
+	Ball.prototype.speed = function() {
+		return BALL_SPEED;
+	}
+}
 
 function Paddle(startPos) {
 	var PADDLE_HEIGHT = 15;
