@@ -13,27 +13,44 @@ addEventListener("keyup", function (e) {
 }, false);
 
 function Game(ctx) {
-	this.ctx = ctx;
-	this.field = new Field(512, 300);
-	this.paddle = new Paddle(new Point(0, 285));
+	var ctx = ctx;
+	var field = new Field(512, 300);
+	var paddle = new Paddle(new Point(0, 285));
 
 	this.tick = function(delta) {
-		this.update(delta);
-		this.field.draw(this.ctx);
-		this.paddle.draw(this.ctx);
+		update(delta);
+		field.draw(ctx);
+		paddle.draw(ctx);
 	}
 
-	this.update = function(delta) {
+	var update = function(delta) {
+		movePaddle(delta);	
+	}
+
+	var movePaddle = function(delta) {
+		paddleMovement = calculatePaddleMovement(delta);
+		potentialNewPos = paddle.peekMove(paddleMovement);
+		if (potentialNewPos.x < 0) {
+			paddleMovement = -paddle.pos.x;
+		}
+		var paddleMaxX = field.width - paddle.width()
+		if (potentialNewPos.x > paddleMaxX) {
+			paddleMovement = paddleMaxX - paddle.pos.x;
+		}
+		paddle.move(paddleMovement);
+
+	}
+
+	var calculatePaddleMovement = function(delta) {
 		var paddleMovement = 0;
 		if (KEY_LEFT in keysDown) {
-			paddleMovement -= (delta / 1000) * this.paddle.speed();	
+			paddleMovement -= (delta / 1000) * paddle.speed();	
 
 		}
 		if (KEY_RIGHT in keysDown) {
-			paddleMovement += (delta / 1000) * this.paddle.speed();	
+			paddleMovement += (delta / 1000) * paddle.speed();	
 		}	
-		this.paddle.move(new Point(this.paddle.pos.x + paddleMovement, this.paddle.pos.y));
-
+		return paddleMovement;
 	}
 }
 
@@ -41,19 +58,34 @@ function Game(ctx) {
 function Paddle(startPos) {
 	var PADDLE_HEIGHT = 15;
 	var PADDLE_WIDTH = 40;
-	var PADDLE_SPEED = 200;
+	var PADDLE_SPEED = 400;
 	this.pos = startPos;
 
-	this.move = function (newPos) {
-		this.pos = newPos;
+	// Positive for right, negative for left. No bounds checking.
+	Paddle.prototype.move = function(howFar) {
+		this.pos = this.peekMove(howFar);
 	}
 
-	this.draw = function(ctx) {
+	// Returns the point the paddle would move to if move was called with this howFar value.
+	Paddle.prototype.peekMove = function(howFar) {
+		return new Point(this.pos.x + howFar, this.pos.y);
+	}
+
+
+	Paddle.prototype.draw = function(ctx) {
 		ctx.fillRect(this.pos.x, this.pos.y, PADDLE_WIDTH, PADDLE_HEIGHT);
 	}
 
-	this.speed = function() {
+	Paddle.prototype.speed = function() {
 		return PADDLE_SPEED;
+	}
+	
+	Paddle.prototype.height = function() {
+		return PADDLE_HEIGHT;
+	}
+
+	Paddle.prototype.width = function() {
+		return PADDLE_WIDTH;
 	}
 
 }
@@ -67,7 +99,7 @@ function Field(width, height) {
 	this.width = width;
 	this.height = height;
 
-	this.draw = function(ctx) {
+	Field.prototype.draw = function(ctx) {
 		ctx.save();
 		ctx.fillStyle="#F984EF";
 		ctx.fillRect(0, 0, this.width, this.height);
