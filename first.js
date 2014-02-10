@@ -1,5 +1,7 @@
 var KEY_LEFT = 37;
 var KEY_RIGHT = 39;
+var GAME_HEIGHT = 375;
+var GAME_WIDTH = 500;
 
 var keysDown = {};
 
@@ -14,8 +16,8 @@ addEventListener("keyup", function (e) {
 
 function Game(ctx) {
 	var ctx = ctx;
-	var field = new Field(512, 300);
-	var paddle = new Paddle(new Point(0, 285));
+	var field = new Field(GAME_WIDTH, GAME_HEIGHT);
+	var paddle = new Paddle(new Point(0, GAME_HEIGHT - 15)); // FIXME hardcoded paddle height :)
 
 	this.tick = function(delta) {
 		update(delta);
@@ -24,10 +26,10 @@ function Game(ctx) {
 	}
 
 	var update = function(delta) {
-		movePaddle(delta);	
+		movePaddleIfKeyDown(delta);	
 	}
 
-	var movePaddle = function(delta) {
+	var movePaddleIfKeyDown = function(delta) {
 		paddleMovement = calculatePaddleMovement(delta);
 		potentialNewPos = paddle.peekMove(paddleMovement);
 		if (potentialNewPos.x < 0) {
@@ -109,8 +111,8 @@ function Field(width, height) {
 
 function setupCanvasContext() {
 	var canvas = document.createElement("canvas");
-	canvas.width = 512;
-	canvas.height = 300;
+	canvas.width = GAME_WIDTH;
+	canvas.height = GAME_HEIGHT;
 	canvas.style.border = "1px solid";
 	document.body.appendChild(canvas);
 	return canvas.getContext("2d");
