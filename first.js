@@ -1,3 +1,16 @@
+var KEY_LEFT = 37;
+var KEY_RIGHT = 39;
+
+var keysDown = {};
+
+
+addEventListener("keydown", function (e) {
+	keysDown[e.keyCode] = true;
+}, false);
+
+addEventListener("keyup", function (e) {
+	delete keysDown[e.keyCode];
+}, false);
 
 function Game(ctx) {
 	this.ctx = ctx;
@@ -5,8 +18,22 @@ function Game(ctx) {
 	this.paddle = new Paddle(new Point(0, 285));
 
 	this.tick = function(delta) {
+		this.update(delta);
 		this.field.draw(this.ctx);
 		this.paddle.draw(this.ctx);
+	}
+
+	this.update = function(delta) {
+		var paddleMovement = 0;
+		if (KEY_LEFT in keysDown) {
+			paddleMovement -= (delta / 1000) * this.paddle.speed();	
+
+		}
+		if (KEY_RIGHT in keysDown) {
+			paddleMovement += (delta / 1000) * this.paddle.speed();	
+		}	
+		this.paddle.move(new Point(this.paddle.pos.x + paddleMovement, this.paddle.pos.y));
+
 	}
 }
 
@@ -14,7 +41,7 @@ function Game(ctx) {
 function Paddle(startPos) {
 	var PADDLE_HEIGHT = 15;
 	var PADDLE_WIDTH = 40;
-	var PADDLE_SPEED = 100;
+	var PADDLE_SPEED = 200;
 	this.pos = startPos;
 
 	this.move = function (newPos) {
@@ -23,6 +50,10 @@ function Paddle(startPos) {
 
 	this.draw = function(ctx) {
 		ctx.fillRect(this.pos.x, this.pos.y, PADDLE_WIDTH, PADDLE_HEIGHT);
+	}
+
+	this.speed = function() {
+		return PADDLE_SPEED;
 	}
 
 }
@@ -52,6 +83,7 @@ function setupCanvasContext() {
 	document.body.appendChild(canvas);
 	return canvas.getContext("2d");
 }
+
 
 var game = new Game(setupCanvasContext());
 
