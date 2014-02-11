@@ -5,6 +5,14 @@ var GAME_WIDTH = 500;
 
 var keysDown = {};
 
+var DIRECTION  = {
+	EAST: "east",
+	SOUTH: "south",
+	WEST: "west",
+	NORTH: "north"
+}
+
+
 
 addEventListener("keydown", function (e) {
 	keysDown[e.keyCode] = true;
@@ -64,6 +72,18 @@ function Game(ctx) {
 	}
 }
 
+function PotentialCollision(cardinalDirection, distanceToCollision, entity) {
+	this.cardinalDirection = cardinalDirection;
+	this.distanceToCollision = distanceToCollision;
+	this.entity = entity;
+
+	PotentialCollision.prototype.toString = function() {
+		return "Direction=" + this.cardinalDirection + ", distance=" + this.distanceToCollision;
+	}
+}
+
+
+
 function Ball(startPos) {
 	var RADIUS = 1;
 	var BALL_SPEED = 300;
@@ -78,54 +98,79 @@ function Ball(startPos) {
 	}
 
 	Ball.prototype.move = function(howFar, field) {
-		function angleHorizontal() {
-			return Math.PI * 1.5 - that.direction;
+		var potentialColissions = []
+		var d = this.ballNorthY() / Math.cos(this.angle(DIRECTION.NORTH));
+		potentialColissions.push(new PotentialCollision(DIRECTION.NORTH, d));
+		d = -((field.height - this.ballSouthY()) / Math.cos(this.angle(DIRECTION.SOUTH)));
+		potentialColissions.push(new PotentialCollision(DIRECTION.SOUTH, d));
+		d = (field.width - this.ballEastX()) / Math.cos(this.angle(DIRECTION.EAST));
+		potentialColissions.push(new PotentialCollision(DIRECTION.EAST, d));
+		d = -this.ballWestX() / Math.cos(this.angle(DIRECTION.WEST));
+		potentialColissions.push(new PotentialCollision(DIRECTION.WEST, d));
+		var candidates = potentialColissions.filter(function(x) {return x.distanceToCollision >= 0});
+		candidates.sort(function(a,b) {return b.distanceToCollision - a.distanceToCollision});
+		var closestCollision = candidates.pop();
+		if (closestCollision && closestCollision.distanceToCollision < howFar) {
+			console.log("colliding: " + closestCollision + " (ball west x: " + this.ballWestX());
+			this.collide(closestCollision);
+			var remainingDistance = howFar - closestCollision.distanceToCollision;
+			this.move(remainingDistance, field);
+		} else {
+			this.moveNoCollisionCheck(howFar);
+		}
+	}
 
+
+	this.angle = function(cardinalDirection) {
+		if (cardinalDirection === DIRECTION.EAST || cardinalDirection === DIRECTION.WEST) {
+			var angle = Math.PI * 2 - this.direction;
+			return angle;
 		}
-		function angleVertical() {
-			return Math.PI * 2 - that.direction;
-		}
+		return Math.PI * 1.5 - this.direction;
+	}
+
+	Ball.prototype.moveNoCollisionCheck = function(distance) {
+		var xComponent = Math.cos(this.direction) * distance;
+		var yComponent = Math.sin(this.direction) * distance;
+		var newX = this.pos.x + xComponent;
+		var newY = this.pos.y + yComponent;
+		// Ensure the ball never goes outside the field and coords become negative (trig gets weird
+		// if edge is on a negative point when it shouldn't)
+		if (newX - RADIUS < 0) newX = RADIUS;
+		if (newY - RADIUS < 0) newY = RADIUS;
+		this.pos = new Point(newX, newY);
+
+	}
+
+	Ball.prototype.collide = function(potentialCollision) {
 		function normalizeDirection() {
-			if (this.direction > 2 * Math.PI) {
+			if (that.direction > 2 * Math.PI) {
 				that.direction -= 2 * Math.PI;
 			}
-			if (this.direction < 0) {
+			if (that.direction < 0) {
 				that.direction += 2 * Math.PI;
 			}
 		}
-		var x = Math.cos(this.direction) * howFar;
-		var y = Math.sin(this.direction) * howFar;
-		if (this.ballNorthY() + y < 0) {
-			var distanceToCollision = this.ballNorthY() / Math.cos(angleHorizontal());
-			var remainingDistance = howFar - distanceToCollision;
-			var xDistanceToCollide = Math.cos(this.direction) * distanceToCollision;
-			var yDistanceToCollide = Math.sin(this.direction) * distanceToCollision;
-			console.log("distance=" + howFar + ", distanceToCollision=" + distanceToCollision + ", remainingDistance=" + remainingDistance + ", xDistanceToCollide=" + xDistanceToCollide);
-			this.direction = this.direction + 2 * angleHorizontal() - Math.PI;
-			this.pos = new Point(this.pos.x + xDistanceToCollide, this.pos.y + yDistanceToCollide);
-			this.move(remainingDistance, field);
-		} else if (this.ballSouthY() + y > field.height) {
-			this.direction = this.direction + 2 * angleHorizontal() - Math.PI;
-			var remainingY = y - (field.height - this.ballSouthY());
-			this.pos = new Point(this.pos.x + x, field.height - remainingY);
-		} else if (this.ballEastX() + x > field.width) {
-			this.direction = this.direction + 2 * angleVertical() - Math.PI;
-			var remainingX = x - (field.width - this.ballEastX());
-			this.pos = new Point(field.width - remainingX, this.pos.y + y);
-		} else if (this.ballWestX() < 0) {
-			this.direction = this.direction + 2 * angleVertical() - Math.PI;
-			var remainingX = -(x + this.ballWestX());
-			this.pos = new Point(remainingX, this.pos.y + y);
-		}
-		else {
-			this.pos = new Point(this.pos.x + x, this.pos.y + y);
-		}
+		this.direction = this.direction + 2 * this.angle(potentialCollision.cardinalDirection) - Math.PI;
 		normalizeDirection();
+		this.moveNoCollisionCheck(potentialCollision.distanceToCollision);
 	}
 
 	Ball.prototype.speed = function() {
 		return BALL_SPEED;
 	}
+
+	Ball.prototype.ballEdge = function(direction) {
+		if (direction === DIRECTION.EAST)
+			return new Point(this.pos.x + RADIUS, this.pos.y);
+		if (direction === DIRECTION.WEST)
+			return new Point(this.pos.x - RADIUS, this.pos.y);
+		if (direction === DIRECTION.NORTH)
+			return new Point(this.pos.x, this.pos.y - RADIUS);
+		if (direction === DIRECTION.SOUTH)
+			return new Point(this.pos.x, this.pos.y + RADIUS);
+	}
+
 
 	Ball.prototype.ballNorthY = function() {
 		return this.pos.y - RADIUS;
