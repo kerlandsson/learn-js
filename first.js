@@ -22,7 +22,7 @@ function Game(ctx) {
 
 	this.tick = function(delta) {
 		update(delta);
-		field.draw(ctx);
+		//field.draw(ctx);
 		paddle.draw(ctx);
 		ball.draw(ctx);
 	}
@@ -65,10 +65,10 @@ function Game(ctx) {
 }
 
 function Ball(startPos) {
-	var RADIUS = 3;
+	var RADIUS = 1;
 	var BALL_SPEED = 300;
 	this.pos = startPos;
-	this.direction = Math.PI * 1.65;
+	this.direction = Math.PI * 1 + Math.random();
 	var that = this;
 
 	Ball.prototype.draw = function(ctx) {
@@ -87,28 +87,32 @@ function Ball(startPos) {
 		}
 		function normalizeDirection() {
 			if (this.direction > 2 * Math.PI) {
-				this.direction -= 2 * Math.PI;
+				that.direction -= 2 * Math.PI;
 			}
 			if (this.direction < 0) {
-				this.direction += 2 * Math.PI;
+				that.direction += 2 * Math.PI;
 			}
 		}
 		var x = Math.cos(this.direction) * howFar;
 		var y = Math.sin(this.direction) * howFar;
-		if (this.ballNorthY() + y <= 0) {
+		if (this.ballNorthY() + y < 0) {
+			var distanceToCollision = this.ballNorthY() / Math.cos(angleHorizontal());
+			var remainingDistance = howFar - distanceToCollision;
+			var xDistanceToCollide = Math.cos(this.direction) * distanceToCollision;
+			var yDistanceToCollide = Math.sin(this.direction) * distanceToCollision;
+			console.log("distance=" + howFar + ", distanceToCollision=" + distanceToCollision + ", remainingDistance=" + remainingDistance + ", xDistanceToCollide=" + xDistanceToCollide);
 			this.direction = this.direction + 2 * angleHorizontal() - Math.PI;
-			var remainingY = -(y + this.ballNorthY());
-			this.pos = new Point(this.pos.x + x, remainingY);
-			console.log(this.direction);
-		} else if (this.ballSouthY() + y >= field.height) {
+			this.pos = new Point(this.pos.x + xDistanceToCollide, this.pos.y + yDistanceToCollide);
+			this.move(remainingDistance, field);
+		} else if (this.ballSouthY() + y > field.height) {
 			this.direction = this.direction + 2 * angleHorizontal() - Math.PI;
 			var remainingY = y - (field.height - this.ballSouthY());
 			this.pos = new Point(this.pos.x + x, field.height - remainingY);
-		} else if (this.ballEastX() + x >= field.width) {
+		} else if (this.ballEastX() + x > field.width) {
 			this.direction = this.direction + 2 * angleVertical() - Math.PI;
 			var remainingX = x - (field.width - this.ballEastX());
 			this.pos = new Point(field.width - remainingX, this.pos.y + y);
-		} else if (this.ballWestX() <= 0) {
+		} else if (this.ballWestX() < 0) {
 			this.direction = this.direction + 2 * angleVertical() - Math.PI;
 			var remainingX = -(x + this.ballWestX());
 			this.pos = new Point(remainingX, this.pos.y + y);
