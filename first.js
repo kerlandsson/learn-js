@@ -18,7 +18,7 @@ function Game(ctx) {
 	var ctx = ctx;
 	var field = new Field(GAME_WIDTH, GAME_HEIGHT);
 	var paddle = new Paddle(new Point(0, GAME_HEIGHT - 15)); // FIXME hardcoded paddle height :)
-	var ball = new Ball(new Point(50, 50));
+	var ball = new Ball(new Point(50, GAME_HEIGHT - 50));
 
 	this.tick = function(delta) {
 		update(delta);
@@ -34,9 +34,7 @@ function Game(ctx) {
 
 	var moveBall = function(delta) {
 		var howFar = (delta / 1000) * ball.speed();
-		x = Math.cos(ball.direction) * howFar;
-		y = Math.sin(ball.direction) * howFar;
-		ball.move(x, y);
+		ball.move(howFar, field);
 	}
 
 	var movePaddleIfKeyDown = function(delta) {
@@ -68,9 +66,9 @@ function Game(ctx) {
 
 function Ball(startPos) {
 	var RADIUS = 3;
-	var BALL_SPEED = 200;
+	var BALL_SPEED = 300;
 	this.pos = startPos;
-	this.direction = Math.PI / 4;
+	this.direction = Math.PI * 1.65;
 
 	Ball.prototype.draw = function(ctx) {
 		ctx.beginPath();
@@ -78,13 +76,54 @@ function Ball(startPos) {
 		ctx.fill();
 	}
 
-	Ball.prototype.move = function(x, y) {
-		this.pos = new Point(this.pos.x + x, this.pos.y + y);
+	Ball.prototype.move = function(howFar, field) {
+		var x = Math.cos(this.direction) * howFar;
+		var y = Math.sin(this.direction) * howFar;
+		if (this.ballNorthY() + y <= 0) {
+			var angle = this.direction - Math.PI * 1.5;
+			this.direction = this.direction - 2 * angle - Math.PI;
+			var remainingY = -(y + this.ballNorthY());
+			this.pos = new Point(this.pos.x + x, remainingY);
+		} else if (this.ballSouthY() + y >= field.height) {
+			var angle = Math.PI * 1.5 - this.direction;
+			this.direction = this.direction + 2 * angle + Math.PI;
+			var remainingY = y - (field.height - this.ballSouthY());
+			this.pos = new Point(this.pos.x + x, field.height - remainingY);
+		} else if (this.ballEastX() + x >= field.width) {
+			var angle = Math.PI * 2 - this.direction;
+			this.direction = this.direction + 2 * angle - 2 * Math.PI - Math.PI;
+			var remainingX = x - (field.width - this.ballEastX());
+			this.pos = new Point(field.width - remainingX, this.pos.y + y);
+		} else if (this.ballWestX() <= 0) {
+			var angle = Math.PI * 2 - this.direction;
+			this.direction = this.direction + 2 * angle - 2 * Math.PI - Math.PI;
+			var remainingX = -(x + this.ballWestX());
+			this.pos = new Point(remainingX, this.pos.y + y);
+			
+		}
+		
+		else {
+			this.pos = new Point(this.pos.x + x, this.pos.y + y);
+		}
 	}
 
 	Ball.prototype.speed = function() {
 		return BALL_SPEED;
 	}
+
+	Ball.prototype.ballNorthY = function() {
+		return this.pos.y - RADIUS;
+	}
+	Ball.prototype.ballSouthY = function() {
+		return this.pos.y + RADIUS;
+	}
+	Ball.prototype.ballEastX = function() {
+		return this.pos.x + RADIUS;
+	}
+	Ball.prototype.ballWestX = function() {
+		return this.pos.x - RADIUS;
+	}
+
 }
 
 function Paddle(startPos) {
