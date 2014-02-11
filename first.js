@@ -69,6 +69,7 @@ function Ball(startPos) {
 	var BALL_SPEED = 300;
 	this.pos = startPos;
 	this.direction = Math.PI * 1.65;
+	var that = this;
 
 	Ball.prototype.draw = function(ctx) {
 		ctx.beginPath();
@@ -77,34 +78,45 @@ function Ball(startPos) {
 	}
 
 	Ball.prototype.move = function(howFar, field) {
+		function angleHorizontal() {
+			return Math.PI * 1.5 - that.direction;
+
+		}
+		function angleVertical() {
+			return Math.PI * 2 - that.direction;
+		}
+		function normalizeDirection() {
+			if (this.direction > 2 * Math.PI) {
+				this.direction -= 2 * Math.PI;
+			}
+			if (this.direction < 0) {
+				this.direction += 2 * Math.PI;
+			}
+		}
 		var x = Math.cos(this.direction) * howFar;
 		var y = Math.sin(this.direction) * howFar;
 		if (this.ballNorthY() + y <= 0) {
-			var angle = this.direction - Math.PI * 1.5;
-			this.direction = this.direction - 2 * angle - Math.PI;
+			this.direction = this.direction + 2 * angleHorizontal() - Math.PI;
 			var remainingY = -(y + this.ballNorthY());
 			this.pos = new Point(this.pos.x + x, remainingY);
+			console.log(this.direction);
 		} else if (this.ballSouthY() + y >= field.height) {
-			var angle = Math.PI * 1.5 - this.direction;
-			this.direction = this.direction + 2 * angle + Math.PI;
+			this.direction = this.direction + 2 * angleHorizontal() - Math.PI;
 			var remainingY = y - (field.height - this.ballSouthY());
 			this.pos = new Point(this.pos.x + x, field.height - remainingY);
 		} else if (this.ballEastX() + x >= field.width) {
-			var angle = Math.PI * 2 - this.direction;
-			this.direction = this.direction + 2 * angle - 2 * Math.PI - Math.PI;
+			this.direction = this.direction + 2 * angleVertical() - Math.PI;
 			var remainingX = x - (field.width - this.ballEastX());
 			this.pos = new Point(field.width - remainingX, this.pos.y + y);
 		} else if (this.ballWestX() <= 0) {
-			var angle = Math.PI * 2 - this.direction;
-			this.direction = this.direction + 2 * angle - 2 * Math.PI - Math.PI;
+			this.direction = this.direction + 2 * angleVertical() - Math.PI;
 			var remainingX = -(x + this.ballWestX());
 			this.pos = new Point(remainingX, this.pos.y + y);
-			
 		}
-		
 		else {
 			this.pos = new Point(this.pos.x + x, this.pos.y + y);
 		}
+		normalizeDirection();
 	}
 
 	Ball.prototype.speed = function() {
