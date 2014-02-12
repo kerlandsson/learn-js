@@ -26,11 +26,12 @@ function Game(ctx) {
 	var ctx = ctx;
 	var field = new Field(GAME_WIDTH, GAME_HEIGHT);
 	var paddle = new Paddle(new Point(0, GAME_HEIGHT - 15)); // FIXME hardcoded paddle height :)
+	field.paddle = paddle; // FIXME
 	var ball = new Ball(new Point(50, GAME_HEIGHT - 50));
 
 	this.tick = function(delta) {
 		update(delta);
-		//field.draw(ctx);
+		field.draw(ctx);
 		paddle.draw(ctx);
 		ball.draw(ctx);
 	}
@@ -98,6 +99,17 @@ function Ball(startPos) {
 	}
 
 	Ball.prototype.move = function(howFar, field) {
+
+		var maybeNewPos = this.calculateNewPos(howFar);
+		if (intersects(this.boundedRect(maybeNewPos), field.paddle)) {
+			this.collide(new PotentialCollision(DIRECTION.SOUTH, 2, field.paddle));
+			console.log("colliding with paddle");
+			this.move(howFar, field);
+			return;
+		}
+
+
+		
 		var potentialCollisions = this.findEdgeCollisions(field);
 		var candidates = potentialCollisions.filter(this.isCandidateCollision);
 		candidates.sort(function(a,b) {return b.distanceToCollision - a.distanceToCollision});
@@ -157,6 +169,11 @@ function Ball(startPos) {
 	}
 
 	Ball.prototype.moveNoCollisionCheck = function(distance) {
+		this.pos = this.calculateNewPos(distance);
+
+	}
+
+	Ball.prototype.calculateNewPos = function(distance) {
 		var xComponent = Math.cos(this.direction) * distance;
 		var yComponent = Math.sin(this.direction) * distance;
 		var newX = this.pos.x + xComponent;
@@ -165,8 +182,7 @@ function Ball(startPos) {
 		// if edge is on a negative point when it shouldn't)
 		if (newX - RADIUS < 0) newX = RADIUS;
 		if (newY - RADIUS < 0) newY = RADIUS;
-		this.pos = new Point(newX, newY);
-
+		return new Point(newX, newY);
 	}
 
 	/** Moves the ball to the point of collision and changes direction accordingly */
@@ -181,7 +197,9 @@ function Ball(startPos) {
 		}
 		console.log("Moving distance to collision: " + potentialCollision.distanceToCollision);
 		this.moveNoCollisionCheck(potentialCollision.distanceToCollision);
+		console.log("dir before: " + this.direction);
 		this.direction = this.direction + 2 * this.angle(potentialCollision.cardinalDirection) - Math.PI;
+		console.log("dir after: " + this.direction);
 		normalizeDirection();
 	}
 
@@ -200,6 +218,30 @@ function Ball(startPos) {
 			return new Point(this.pos.x, this.pos.y + RADIUS);
 	}
 
+	Ball.prototype.boundedRect = function(pos) {
+		if (!pos) {
+			pos = that.pos;
+		}
+		return {
+			x : function() { return pos.x - RADIUS; },
+			y : function() { return pos.y - RADIUS; },
+		    width : function() { return 2*RADIUS; },
+		    height : function() { return 2*RADIUS; }
+		}
+	}
+}
+
+function intersects(r1, r2) {
+	return (r1.x() < r2.x() + r2.width() 
+			&& r1.x() + r1.width() > r2.x()
+			&& r1.y() < r2.y() + r2.height()
+			&& r1.y() + r1.height() > r2.y());
+}
+
+function Brick(pos, width, height) {
+	this.pos = pos;
+	this.width = width;
+	this.height = height;
 }
 
 function Paddle(startPos) {
@@ -233,6 +275,14 @@ function Paddle(startPos) {
 
 	Paddle.prototype.width = function() {
 		return PADDLE_WIDTH;
+	}
+
+	Paddle.prototype.x = function() {
+		return this.pos.x;
+	}
+
+	Paddle.prototype.y = function() {
+		return this.pos.y;
 	}
 
 }
