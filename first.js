@@ -30,7 +30,7 @@ function Game(ctx) {
 
 	this.tick = function(delta) {
 		update(delta);
-		field.draw(ctx);
+		//field.draw(ctx);
 		paddle.draw(ctx);
 		ball.draw(ctx);
 	}
@@ -276,8 +276,16 @@ function tick(timestamp) {
 		this.lastTickAt = timestamp;
 	}
 	var delta = timestamp - lastTickAt;
-	lastTickAt = timestamp;
-	game.tick(delta);
+	this.lastTickAt = timestamp;
+	// If too much time has passed, start over to avoid queing up too much
+	if (delta < 1000) {
+		var minTick = 40;
+		while (delta > minTick) {
+			game.tick(minTick);
+			delta = delta - minTick;
+		}
+		game.tick(delta);
+	}
 	requestAnimationFrame(tick)
 }
 
