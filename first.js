@@ -78,7 +78,7 @@ function PotentialCollision(cardinalDirection, distanceToCollision, entity) {
 	this.entity = entity;
 
 	PotentialCollision.prototype.toString = function() {
-		return "Direction=" + this.cardinalDirection + ", distance=" + this.distanceToCollision;
+		return "direction=" + this.cardinalDirection + ", distance=" + this.distanceToCollision;
 	}
 }
 
@@ -99,18 +99,39 @@ function Ball(startPos) {
 
 	Ball.prototype.move = function(howFar, field) {
 		var potentialCollisions = this.findEdgeCollisions(field);
-		var candidates = potentialCollisions.filter(function(x) {return x.distanceToCollision >= 0});
+		var candidates = potentialCollisions.filter(this.isCandidateCollision);
 		candidates.sort(function(a,b) {return b.distanceToCollision - a.distanceToCollision});
 		var closestCollision = candidates.pop();
 		if (closestCollision && closestCollision.distanceToCollision < howFar) {
-			console.log("colliding: " + closestCollision);
 			this.collide(closestCollision);
 			var remainingDistance = howFar - closestCollision.distanceToCollision;
+			console.log("colliding: " + closestCollision + ", new dir: " + this.direction
+					+ ", dist left: " + remainingDistance + ", pos after: " + this.pos);
 			this.move(remainingDistance, field);
 		} else {
 			this.moveNoCollisionCheck(howFar);
 		}
 	}
+
+	this.movingInCardinalDirection = function(d) {
+		if (d === DIRECTION.NORTH) {
+			return this.direction > Math.PI;
+		}
+		if (d === DIRECTION.SOUTH) {
+			return this.direction < Math.PI;
+		}
+		if (d === DIRECTION.EAST) {
+			return this.direction > 1.5 * Math.PI || this.direction < 0.5 * Math.PI;
+		}
+		if (d == DIRECTION.WEST) {
+			return this.direction > 0.5 * Math.PI && this.direction < 1.5 * Math.PI;
+		}
+	}
+
+	this.isCandidateCollision = function(pc) {
+		return that.movingInCardinalDirection(pc.cardinalDirection);
+	}
+
 
 	this.findEdgeCollisions = function(field) {
 		var potentialCollisions = []
@@ -123,7 +144,6 @@ function Ball(startPos) {
 		d = -this.ballEdge(DIRECTION.WEST).x / Math.cos(this.angle(DIRECTION.WEST));
 		potentialCollisions.push(new PotentialCollision(DIRECTION.WEST, d));
 		return potentialCollisions;
-
 	}
 
 
@@ -159,9 +179,10 @@ function Ball(startPos) {
 				that.direction += 2 * Math.PI;
 			}
 		}
+		console.log("Moving distance to collision: " + potentialCollision.distanceToCollision);
+		this.moveNoCollisionCheck(potentialCollision.distanceToCollision);
 		this.direction = this.direction + 2 * this.angle(potentialCollision.cardinalDirection) - Math.PI;
 		normalizeDirection();
-		this.moveNoCollisionCheck(potentialCollision.distanceToCollision);
 	}
 
 	Ball.prototype.speed = function() {
@@ -219,6 +240,10 @@ function Paddle(startPos) {
 function Point(x, y) {
 	this.x = x;
 	this.y = y;
+
+	Point.prototype.toString = function() {
+		return x + "," + y;
+	}
 }
 
 function Field(width, height) {
