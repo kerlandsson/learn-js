@@ -31,4 +31,12 @@ test ( "intersects bottom left", function() {
 	ok(intersects(r, r2));
 });
 
+test ("getEdge", function() {
+	propEqual(r.getEdge(DIR.W), new Edge(10, 20, 10, 60));
+	propEqual(r.getEdge(DIR.N), new Edge(10, 20, 40, 20));
+	propEqual(r.getEdge(DIR.E), new Edge(40, 20, 40, 60));
+	propEqual(r.getEdge(DIR.S), new Edge(10, 60, 40, 60));
+});
+
+
 
