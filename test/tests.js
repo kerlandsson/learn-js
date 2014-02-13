@@ -39,4 +39,13 @@ test ("getEdge", function() {
 });
 
 
-
+test ("cardinalDirection", function() {
+	deepEqual(new Vector(1,1).getCardinalDirections(), [DIR.E, DIR.S]);
+	deepEqual(new Vector(-1,1).getCardinalDirections(), [DIR.W, DIR.S]);
+	deepEqual(new Vector(-1,-1).getCardinalDirections(), [DIR.W, DIR.N]);
+	deepEqual(new Vector(1,-1).getCardinalDirections(), [DIR.E, DIR.N]);
+	deepEqual(new Vector(1,0).getCardinalDirections(), [DIR.E]);
+	deepEqual(new Vector(-1,0).getCardinalDirections(), [DIR.W]);
+	deepEqual(new Vector(0,1).getCardinalDirections(), [DIR.S]);
+	deepEqual(new Vector(0,-1).getCardinalDirections(), [DIR.N]);
+});

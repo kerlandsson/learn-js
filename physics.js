@@ -28,11 +28,27 @@ function Edge(x1, y1, x2, y2) {
 	this.x2 = x2;
 	this.y1 = y1;
 	this.y2 = y2;
+
 }
 
 function Vector(vx, vy) {
 	this.vx = vx;
 	this.vy = vy;
+
+	Vector.prototype.getCardinalDirections = function() {
+		var directions = [];
+		if (this.vx > 0) {
+			directions.push(DIR.E);
+		} else if (this.vx < 0) {
+			directions.push(DIR.W);
+		}
+		if (this.vy > 0) {
+			directions.push(DIR.S);
+		} else if (this.vy < 0) {
+			directions.push(DIR.N);
+		}
+		return directions;
+	}
 }
 
 function intersects(r1, r2) {
@@ -41,3 +57,4 @@ function intersects(r1, r2) {
                         && r1.y <= r2.y + r2.h
                         && r1.y + r1.h >= r2.y;
 }
+
