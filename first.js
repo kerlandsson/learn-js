@@ -41,10 +41,8 @@ function Game(ctx) {
 	}
 
 	var moveBall = function(delta) {
-		var simulationBall = new Ball(ball.pos);
-		simulationBall.changeSpeed(ball.getSpeedVector());
-		simulationBall.move(delta);
-		var newPosRect = simulationBall.boundedRect();
+		// TODO breaks of paddle moves over ball
+		var newPosRect = newPositionForBall(delta);
 		var allRects = field.bounds.slice(0);
 		allRects.push(paddle.rect());
 		var possibleCollisionRects = allRects.filter(function(x) { return intersects(x, newPosRect) });
@@ -54,16 +52,23 @@ function Game(ctx) {
 					function(x) { return timeToCollision(ball.boundedRect(), speedVector, x) });
 			timesToCollisions.sort(function(a, b) {return b.time - a.time; });
 			var closestCollision = timesToCollisions.pop();
+			ball.move(closestCollision.time);
 			if (closestCollision.direction.isVertical()) {
 				ball.changeSpeed(new Vector(speedVector.vx, -speedVector.vy));
 			} else {
 				ball.changeSpeed(new Vector(-speedVector.vx, speedVector.vy));
 			}
+		} else {
+			ball.move(delta);
 		}
-		ball.move(delta);
 	}
 
-
+	var newPositionForBall = function(delta) {
+		var simulationBall = ball.createSimulationBall();
+		simulationBall.changeSpeed(ball.getSpeedVector());
+		simulationBall.move(delta);
+		return simulationBall.boundedRect();
+	}
 
 	var movePaddleIfKeyDown = function(delta) {
 		paddleMovement = calculatePaddleMovement(delta);
@@ -117,6 +122,12 @@ function Ball(startPos) {
 
 	this.boundedRect = function() {
 		return new Rectangle(this.pos.x - RADIUS, this.pos.y - RADIUS, 2*RADIUS, 2*RADIUS);
+	}
+
+	this.createSimulationBall = function() {
+		var newBall = new Ball(this.pos);
+		newBall.changeSpeed(this.getSpeedVector());
+		return newBall;
 	}
 }
 
