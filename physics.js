@@ -64,33 +64,35 @@ function Edge(x1, y1, x2, y2) {
 
 function timeToCollision(movingRect, vector, stillRect) {
 	var movingCollisionDirs = vector.getCardinalDirections();
-	var xTime = null;
-	var yTime = null;
+	var xTime = Infinity;
+	var yTime = Infinity;
 	if (movingCollisionDirs.h !== undefined) {
 		var movingEdge = movingRect.getEdge(movingCollisionDirs.h);
 		var stillEdge = stillRect.getEdge(movingCollisionDirs.h.opposite());
 		var yDistance = stillEdge.y1 - movingEdge.y1;
 		yTime = yDistance / vector.vy;
+		if (yTime < 0) {
+			yTime = Infinity;
+		}
 	}
 	if (movingCollisionDirs.v !== undefined) {
 		movingEdge = movingRect.getEdge(movingCollisionDirs.v);
 		stillEdge = stillRect.getEdge(movingCollisionDirs.v.opposite());
 		var xDistance = stillEdge.x1 - movingEdge.x1;
 		xTime = xDistance / vector.vx;
+		if (xTime < 0) {
+			xTime = Infinity;
+		}
 	}
 	var res = {}
-	if (yTime === null) {
-		res.time = xTime;
-		res.direction = movingCollisionDirs.v;
-		return res;
-	}
-	if (xTime === null) {
+	if (yTime < xTime) {
 		res.time = yTime;
 		res.direction = movingCollisionDirs.h;
 		return res;
 	}
-
-
+	res.time = xTime;
+	res.direction = movingCollisionDirs.v;
+	return res;
 }
 
 function Vector(vx, vy) {

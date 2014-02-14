@@ -84,8 +84,8 @@ test ("timeToCollision only vy miss", function() {
 	var r2 = new Rectangle(0, 20, 5, 5);
 	var v = new Vector(0, 5);
 	var res = timeToCollision(r2, v, r);
-	equal(res.time, -1);
-	ok(res.direction.equals(DIR.S));
+	equal(res.time, Infinity);
+	equal(res.direction, undefined);
 });
 
 test ("timeToCollision only vy north", function() {
@@ -112,9 +112,27 @@ test ("timeToCollision only vx west", function() {
 	ok(res.direction.equals(DIR.W));
 });
 
-//test ("timeToCollision only vx and vy", function() {
-//	var r2 = new Rectangle(0, 0, 6, 7);
-//	var v = new Vector(5, 5);
-//	equal(timeToCollision(r2, v, r), 5);
-//});
+test ("timeToCollision vx and vy x", function() {
+	var r2 = new Rectangle(0, 0, 6, 7);
+	var v = new Vector(5, 5);
+	var res = timeToCollision(r2, v, r);
+	equal(res.time, 4/5);
+	ok(res.direction.equals(DIR.E));
+});
+
+test ("timeToCollision vx and vy y", function() {
+	var r2 = new Rectangle(-15, 0, 6, 7);
+	var v = new Vector(5, 5);
+	var res = timeToCollision(r2, v, r);
+	equal(res.time, 13/5);
+	ok(res.direction.equals(DIR.S));
+});
+
+test ("timeToCollision vx and vy x miss", function() {
+	var r2 = new Rectangle(11, 0, 6, 7);
+	var v = new Vector(5, 5);
+	var res = timeToCollision(r2, v, r);
+	equal(res.time, 13/5);
+	ok(res.direction.equals(DIR.S));
+});
 
