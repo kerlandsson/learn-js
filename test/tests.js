@@ -1,4 +1,5 @@
 var r = new Rectangle(10,20,30,40); // test rectangle
+
 test( "create rect", function() {
 	equal(r.x, 10);
 	equal(r.y, 20);
@@ -38,6 +39,14 @@ test ("getEdge", function() {
 	propEqual(r.getEdge(DIR.S), new Edge(10, 60, 40, 60));
 });
 
+test ("isVerticalEdge", function() {
+	ok(r.getEdge(DIR.W).isVerticalEdge());
+	ok(r.getEdge(DIR.E).isVerticalEdge());
+	ok(!r.getEdge(DIR.N).isVerticalEdge());
+	ok(!r.getEdge(DIR.S).isVerticalEdge());
+});
+
+
 
 test ("cardinalDirection", function() {
 	deepEqual(new Vector(1,1).getCardinalDirections(), [DIR.E, DIR.S]);
@@ -55,6 +64,17 @@ test ("oppositeDir", function() {
 	ok(DIR.E.opposite().equals(DIR.W));
 	ok(DIR.N.opposite().equals(DIR.S));
 	ok(DIR.S.opposite().equals(DIR.N));
-
-//	equal(oppositeDir(DIR.E), DIR.W);
 });
+
+test ("timeToCollision only vy", function() {
+	var r2 = new Rectangle(0, 0, 5, 5);
+	var v = new Vector(0, 5);
+	equal(timeToCollision(r2, v, r), 15);
+});
+
+test ("timeToCollision only vx", function() {
+	var r2 = new Rectangle(0, 15, 5, 5);
+	var v = new Vector(5, 0);
+	equal(timeToCollision(r2, v, r), 5);
+});
+

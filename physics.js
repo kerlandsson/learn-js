@@ -48,7 +48,6 @@ function Rectangle(x, y, w, h) {
 		} else if (dir.equals(DIR.S)) {
 			return new Edge(this.x, this.y + this.h, this.x + this.w, this.y + this.h);
 		}
-
 	}
 }
 
@@ -57,9 +56,25 @@ function Edge(x1, y1, x2, y2) {
 	this.x2 = x2;
 	this.y1 = y1;
 	this.y2 = y2;
+
+	Edge.prototype.isVerticalEdge = function() {
+		return this.x1 === this.x2;
+	}
 }
 
-function collisionEdge(movingRect, vector, stillRect) {
+function timeToCollision(movingRect, vector, stillRect) {
+	var movingCollisionDirs = vector.getCardinalDirections();
+	if (movingCollisionDirs.length == 1) {
+		var movingEdge = movingRect.getEdge(movingCollisionDirs[0]);
+		var stillEdge = stillRect.getEdge(movingCollisionDirs[0].opposite());
+		if (movingEdge.isVerticalEdge()) {
+			var xDistance = stillEdge.x1 - movingEdge.x1;
+			return xDistance;
+		} else {
+			var yDistance = stillEdge.y1 - movingEdge.y1;
+			return yDistance;
+		}
+	}
 
 }
 
