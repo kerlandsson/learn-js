@@ -66,16 +66,28 @@ test ("oppositeDir", function() {
 	ok(DIR.S.opposite().equals(DIR.N));
 });
 
-test ("timeToCollision only vy", function() {
+test ("timeToCollision only vy south", function() {
 	var r2 = new Rectangle(0, 0, 5, 5);
 	var v = new Vector(0, 5);
 	equal(timeToCollision(r2, v, r), 15);
 });
 
-test ("timeToCollision only vx", function() {
+test ("timeToCollision only vy north", function() {
+	var r2 = new Rectangle(0, 65, 5, 5);
+	var v = new Vector(0, -5);
+	equal(timeToCollision(r2, v, r), 5);
+});
+
+test ("timeToCollision only vx east", function() {
 	var r2 = new Rectangle(0, 15, 5, 5);
 	var v = new Vector(5, 0);
 	equal(timeToCollision(r2, v, r), 5);
+});
+
+test ("timeToCollision only vx west", function() {
+	var r2 = new Rectangle(50, 15, 5, 5);
+	var v = new Vector(-5, 0);
+	equal(timeToCollision(r2, v, r), 10);
 });
 
 //test ("timeToCollision only vx and vy", function() {

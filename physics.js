@@ -69,12 +69,12 @@ function timeToCollision(movingRect, vector, stillRect) {
 	if (movingCollisionDirs.h !== undefined) {
 		var movingEdge = movingRect.getEdge(movingCollisionDirs.h);
 		var stillEdge = stillRect.getEdge(movingCollisionDirs.h.opposite());
-		yDistance = stillEdge.y1 - movingEdge.y1;
+		yDistance = Math.abs(stillEdge.y1 - movingEdge.y1);
 	}
 	if (movingCollisionDirs.v !== undefined) {
 		movingEdge = movingRect.getEdge(movingCollisionDirs.v);
 		stillEdge = stillRect.getEdge(movingCollisionDirs.v.opposite());
-		xDistance = stillEdge.x1 - movingEdge.x1;
+		xDistance = Math.abs(stillEdge.x1 - movingEdge.x1);
 	}
 	if (yDistance === null) {
 		return xDistance;
