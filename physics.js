@@ -29,6 +29,10 @@ function Direction(direction) {
 	Direction.prototype.equals = function(other) {
 		return other.direction === this.direction;
 	}
+
+	Direction.prototype.isVertical = function() {
+		return this.direction == DIRS.N || this.direction == DIRS.S;
+	}
 }
 
 
