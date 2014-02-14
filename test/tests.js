@@ -59,6 +59,12 @@ test ("cardinalDirection", function() {
 	deepEqual(new Vector(0,-1).getCardinalDirections(), {h: DIR.N});
 });
 
+test ("vectorMagnitude", function() {
+	var v = new Vector(3, 4);
+	equal(v.magnitude(), 5);
+
+});
+
 test ("oppositeDir", function() {
 	ok(DIR.W.opposite().equals(DIR.E));
 	ok(DIR.E.opposite().equals(DIR.W));
@@ -69,25 +75,25 @@ test ("oppositeDir", function() {
 test ("timeToCollision only vy south", function() {
 	var r2 = new Rectangle(0, 0, 5, 5);
 	var v = new Vector(0, 5);
-	equal(timeToCollision(r2, v, r), 15);
+	equal(timeToCollision(r2, v, r), 3);
 });
 
 test ("timeToCollision only vy north", function() {
 	var r2 = new Rectangle(0, 65, 5, 5);
 	var v = new Vector(0, -5);
-	equal(timeToCollision(r2, v, r), 5);
+	equal(timeToCollision(r2, v, r), 1);
 });
 
 test ("timeToCollision only vx east", function() {
 	var r2 = new Rectangle(0, 15, 5, 5);
 	var v = new Vector(5, 0);
-	equal(timeToCollision(r2, v, r), 5);
+	equal(timeToCollision(r2, v, r), 1);
 });
 
 test ("timeToCollision only vx west", function() {
 	var r2 = new Rectangle(50, 15, 5, 5);
 	var v = new Vector(-5, 0);
-	equal(timeToCollision(r2, v, r), 10);
+	equal(timeToCollision(r2, v, r), 2);
 });
 
 //test ("timeToCollision only vx and vy", function() {

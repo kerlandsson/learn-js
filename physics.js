@@ -64,24 +64,27 @@ function Edge(x1, y1, x2, y2) {
 
 function timeToCollision(movingRect, vector, stillRect) {
 	var movingCollisionDirs = vector.getCardinalDirections();
-	var xDistance = null;
-	var yDistance = null;
+	var xTime = null;
+	var yTime = null;
 	if (movingCollisionDirs.h !== undefined) {
 		var movingEdge = movingRect.getEdge(movingCollisionDirs.h);
 		var stillEdge = stillRect.getEdge(movingCollisionDirs.h.opposite());
-		yDistance = Math.abs(stillEdge.y1 - movingEdge.y1);
+		var yDistance = stillEdge.y1 - movingEdge.y1;
+		yTime = yDistance / vector.vy;
 	}
 	if (movingCollisionDirs.v !== undefined) {
 		movingEdge = movingRect.getEdge(movingCollisionDirs.v);
 		stillEdge = stillRect.getEdge(movingCollisionDirs.v.opposite());
-		xDistance = Math.abs(stillEdge.x1 - movingEdge.x1);
+		var xDistance = stillEdge.x1 - movingEdge.x1;
+		xTime = xDistance / vector.vx;
 	}
-	if (yDistance === null) {
-		return xDistance;
+	if (yTime === null) {
+		return xTime;
 	}
-	if (xDistance === null) {
-		return yDistance;
+	if (xTime === null) {
+		return yTime;
 	}
+
 
 }
 
@@ -103,6 +106,12 @@ function Vector(vx, vy) {
 		}
 		return directions;
 	}
+
+	Vector.prototype.magnitude = function() {
+		return Math.sqrt(vx * vx + vy * vy);
+	}
+
+
 }
 
 function intersects(r1, r2) {
