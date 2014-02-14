@@ -83,9 +83,7 @@ test ("timeToCollision only vy south", function() {
 test ("timeToCollision only vy miss", function() {
 	var r2 = new Rectangle(0, 20, 5, 5);
 	var v = new Vector(0, 5);
-	var res = timeToCollision(r2, v, r);
-	equal(res.time, Infinity);
-	equal(res.direction, undefined);
+	throws(function() {timeToCollision(r2, v, r);});
 });
 
 test ("timeToCollision only vy north", function() {

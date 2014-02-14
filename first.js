@@ -26,7 +26,6 @@ function Game(ctx) {
 	var ctx = ctx;
 	var field = new Field(GAME_WIDTH, GAME_HEIGHT);
 	var paddle = new Paddle(new Point(0, GAME_HEIGHT - 15)); // FIXME hardcoded paddle height :)
-	field.paddle = paddle; // FIXME
 	var ball = new Ball(new Point(50, GAME_HEIGHT - 50));
 
 	this.tick = function(delta) {
@@ -42,9 +41,29 @@ function Game(ctx) {
 	}
 
 	var moveBall = function(delta) {
-		var howFar = delta / 1000;
-		ball.move(howFar, field);
+		var simulationBall = new Ball(ball.pos);
+		simulationBall.changeSpeed(ball.getSpeedVector());
+		simulationBall.move(delta);
+		var newPosRect = simulationBall.boundedRect();
+		var allRects = field.bounds.slice(0);
+		allRects.push(paddle.rect());
+		var possibleCollisionRects = allRects.filter(function(x) { return intersects(x, newPosRect) });
+		if (possibleCollisionRects.length > 0) {
+			var speedVector = ball.getSpeedVector();
+			var timesToCollisions = possibleCollisionRects.map(
+					function(x) { return timeToCollision(ball.boundedRect(), speedVector, x) });
+			timesToCollisions.sort(function(a, b) {return b.time - a.time; });
+			var closestCollision = timesToCollisions.pop();
+			if (closestCollision.direction.isVertical()) {
+				ball.changeSpeed(new Vector(speedVector.vx, -speedVector.vy));
+			} else {
+				ball.changeSpeed(new Vector(-speedVector.vx, speedVector.vy));
+			}
+		}
+		ball.move(delta);
 	}
+
+
 
 	var movePaddleIfKeyDown = function(delta) {
 		paddleMovement = calculatePaddleMovement(delta);
@@ -76,40 +95,28 @@ function Game(ctx) {
 function Ball(startPos) {
 	var RADIUS = 3;
 	this.pos = startPos;
-	this.vector = new Vector(200, -200);
-	var that = this;
+	this.vector = new Vector(0.2, -0.2);
 
-	Ball.prototype.draw = function(ctx) {
+	this.draw = function(ctx) {
 		ctx.beginPath();
 		ctx.arc(this.pos.x, this.pos.y, RADIUS, 0, Math.PI*2);
 		ctx.fill();
 	}
 
-	Ball.prototype.move = function(howFar, field) {
-		var newPosition = new Point(this.pos.x + this.vector.vx*howFar, this.pos.y + this.vector.vy*howFar);
-		var newPosRect = this.boundedRect(newPosition);
-		var possibleCollisionRects = field.bounds.filter(function(x) { return intersects(x, newPosRect) });
-		if (possibleCollisionRects.length > 0) {
-			console.log(possibleCollisionRects);
-			var timesToCollisions = possibleCollisionRects.map(
-					function(x) { return timeToCollision(that.boundedRect(), that.vector, x) });
-			timesToCollisions.sort(function(a, b) {return b.time - a.time; });
-			console.log(timesToCollisions);
-			var closestCollision = timesToCollisions.pop();
-			if (closestCollision.direction.isVertical()) {
-				this.vector.vy = -this.vector.vy;
-			} else {
-				this.vector.vx = -this.vector.vx;
-			}
-		}
-		this.pos = newPosition;
+	this.move = function(time) {
+		this.pos = new Point(this.pos.x + this.vector.vx * time, this.pos.y + this.vector.vy * time);
 	}
 
-	Ball.prototype.boundedRect = function(pos) {
-		if (!pos) {
-			pos = that.pos;
-		}
-		return new Rectangle(pos.x - RADIUS, pos.y - RADIUS, 2*RADIUS, 2*RADIUS);
+	this.changeSpeed = function(speedVector) {
+		this.vector = speedVector; 
+	}
+
+	this.getSpeedVector = function() {
+		return this.vector;
+	}
+
+	this.boundedRect = function() {
+		return new Rectangle(this.pos.x - RADIUS, this.pos.y - RADIUS, 2*RADIUS, 2*RADIUS);
 	}
 }
 
@@ -163,10 +170,10 @@ function Field(width, height) {
 	this.width = width;
 	this.height = height;
 	this.bounds = [];
-	this.bounds.push(new Rectangle(-10, -10, 10, height + 20));
-	this.bounds.push(new Rectangle(-10, -10, width + 20, 10));
-	this.bounds.push(new Rectangle(width, -10, 10, height + 20));
-	this.bounds.push(new Rectangle(-10, height, width + 20, 10));
+	this.bounds.push(new Rectangle(-1000, -1000, 1000, height + 2000));
+	this.bounds.push(new Rectangle(-1000, -1000, width + 2000, 1000));
+	this.bounds.push(new Rectangle(width, -1000, 1000, height + 2000));
+	this.bounds.push(new Rectangle(-1000, height, width + 2000, 1000));
 
 	Field.prototype.draw = function(ctx) {
 		ctx.save();

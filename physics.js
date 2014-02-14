@@ -96,6 +96,13 @@ function timeToCollision(movingRect, vector, stillRect) {
 	}
 	res.time = xTime;
 	res.direction = movingCollisionDirs.v;
+	if (res.direction === undefined) {
+		throw "could not determine collision direction";
+	}
+	if (res.time === Infinity) {
+		throw "Infinity until collision";
+	}
+
 	return res;
 }
 
