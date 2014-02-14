@@ -49,14 +49,14 @@ test ("isVerticalEdge", function() {
 
 
 test ("cardinalDirection", function() {
-	deepEqual(new Vector(1,1).getCardinalDirections(), [DIR.E, DIR.S]);
-	deepEqual(new Vector(-1,1).getCardinalDirections(), [DIR.W, DIR.S]);
-	deepEqual(new Vector(-1,-1).getCardinalDirections(), [DIR.W, DIR.N]);
-	deepEqual(new Vector(1,-1).getCardinalDirections(), [DIR.E, DIR.N]);
-	deepEqual(new Vector(1,0).getCardinalDirections(), [DIR.E]);
-	deepEqual(new Vector(-1,0).getCardinalDirections(), [DIR.W]);
-	deepEqual(new Vector(0,1).getCardinalDirections(), [DIR.S]);
-	deepEqual(new Vector(0,-1).getCardinalDirections(), [DIR.N]);
+	deepEqual(new Vector(1,1).getCardinalDirections(), {v: DIR.E, h: DIR.S});
+	deepEqual(new Vector(-1,1).getCardinalDirections(), {v: DIR.W, h: DIR.S});
+	deepEqual(new Vector(-1,-1).getCardinalDirections(), {v: DIR.W, h: DIR.N});
+	deepEqual(new Vector(1,-1).getCardinalDirections(), {v: DIR.E, h: DIR.N});
+	deepEqual(new Vector(1,0).getCardinalDirections(), {v: DIR.E});
+	deepEqual(new Vector(-1,0).getCardinalDirections(), {v: DIR.W});
+	deepEqual(new Vector(0,1).getCardinalDirections(), {h: DIR.S});
+	deepEqual(new Vector(0,-1).getCardinalDirections(), {h: DIR.N});
 });
 
 test ("oppositeDir", function() {
@@ -77,4 +77,10 @@ test ("timeToCollision only vx", function() {
 	var v = new Vector(5, 0);
 	equal(timeToCollision(r2, v, r), 5);
 });
+
+//test ("timeToCollision only vx and vy", function() {
+//	var r2 = new Rectangle(0, 0, 6, 7);
+//	var v = new Vector(5, 5);
+//	equal(timeToCollision(r2, v, r), 5);
+//});
 

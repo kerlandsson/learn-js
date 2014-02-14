@@ -64,16 +64,23 @@ function Edge(x1, y1, x2, y2) {
 
 function timeToCollision(movingRect, vector, stillRect) {
 	var movingCollisionDirs = vector.getCardinalDirections();
-	if (movingCollisionDirs.length == 1) {
-		var movingEdge = movingRect.getEdge(movingCollisionDirs[0]);
-		var stillEdge = stillRect.getEdge(movingCollisionDirs[0].opposite());
-		if (movingEdge.isVerticalEdge()) {
-			var xDistance = stillEdge.x1 - movingEdge.x1;
-			return xDistance;
-		} else {
-			var yDistance = stillEdge.y1 - movingEdge.y1;
-			return yDistance;
-		}
+	var xDistance = null;
+	var yDistance = null;
+	if (movingCollisionDirs.h !== undefined) {
+		var movingEdge = movingRect.getEdge(movingCollisionDirs.h);
+		var stillEdge = stillRect.getEdge(movingCollisionDirs.h.opposite());
+		yDistance = stillEdge.y1 - movingEdge.y1;
+	}
+	if (movingCollisionDirs.v !== undefined) {
+		movingEdge = movingRect.getEdge(movingCollisionDirs.v);
+		stillEdge = stillRect.getEdge(movingCollisionDirs.v.opposite());
+		xDistance = stillEdge.x1 - movingEdge.x1;
+	}
+	if (yDistance === null) {
+		return xDistance;
+	}
+	if (xDistance === null) {
+		return yDistance;
 	}
 
 }
@@ -83,16 +90,16 @@ function Vector(vx, vy) {
 	this.vy = vy;
 
 	Vector.prototype.getCardinalDirections = function() {
-		var directions = [];
+		var directions = {};
 		if (this.vx > 0) {
-			directions.push(DIR.E);
+			directions.v = DIR.E;
 		} else if (this.vx < 0) {
-			directions.push(DIR.W);
+			directions.v = DIR.W;
 		}
 		if (this.vy > 0) {
-			directions.push(DIR.S);
+			directions.h = DIR.S;
 		} else if (this.vy < 0) {
-			directions.push(DIR.N);
+			directions.h = DIR.N;
 		}
 		return directions;
 	}
