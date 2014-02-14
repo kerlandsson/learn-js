@@ -44,30 +44,51 @@ function Game(ctx) {
 		// TODO breaks of paddle moves over ball
 		var newPosRect = newPositionForBall(delta);
 		var allRects = field.bounds.slice(0);
-		allRects.push(paddle.rect());
-		var possibleCollisionRects = allRects.filter(function(x) { return intersects(x, newPosRect) });
+		allRects.push(paddle);
+		allRects = allRects.concat(field.getLiveBricks());
+		var possibleCollisionRects = allRects.filter(function(x) { return intersects(x.rect(), newPosRect) });
 		if (possibleCollisionRects.length > 0) {
 			var speedVector = ball.getSpeedVector();
 			var timesToCollisions = possibleCollisionRects.map(
-					function(x) { return timeToCollision(ball.boundedRect(), speedVector, x) });
+					function(x) {
+						var ttc = timeToCollision(ball.rect(), speedVector, x.rect());
+						ttc.obj = x;
+						return ttc;
+					});
 			timesToCollisions.sort(function(a, b) {return b.time - a.time; });
 			var closestCollision = timesToCollisions.pop();
 			ball.move(closestCollision.time);
-			if (closestCollision.direction.isVertical()) {
-				ball.changeSpeed(new Vector(speedVector.vx, -speedVector.vy));
-			} else {
-				ball.changeSpeed(new Vector(-speedVector.vx, speedVector.vy));
-			}
+			collisionWith(closestCollision);
 		} else {
 			ball.move(delta);
 		}
+	}
+
+	var collisionWith = function(collisionSpec) {
+		var speedVector = ball.getSpeedVector();
+		var collidedWith = collisionSpec.obj;
+		if (collidedWith instanceof FieldEdge) {
+			if (collidedWith.direction.equals(DIR.S)) {
+				// TODO better game over handling :)
+				throw "Game over";
+			}
+		}
+		if (collidedWith instanceof Brick) {
+			collidedWith.live = false;
+		}
+		if (collisionSpec.direction.isVertical()) {
+			ball.changeSpeed(new Vector(speedVector.vx, -speedVector.vy));
+		} else {
+			ball.changeSpeed(new Vector(-speedVector.vx, speedVector.vy));
+		}
+
 	}
 
 	var newPositionForBall = function(delta) {
 		var simulationBall = ball.createSimulationBall();
 		simulationBall.changeSpeed(ball.getSpeedVector());
 		simulationBall.move(delta);
-		return simulationBall.boundedRect();
+		return simulationBall.rect();
 	}
 
 	var movePaddleIfKeyDown = function(delta) {
@@ -120,7 +141,7 @@ function Ball(startPos) {
 		return this.vector;
 	}
 
-	this.boundedRect = function() {
+	this.rect = function() {
 		return new Rectangle(this.pos.x - RADIUS, this.pos.y - RADIUS, 2*RADIUS, 2*RADIUS);
 	}
 
@@ -131,15 +152,21 @@ function Ball(startPos) {
 	}
 }
 
-function Brick(pos, width, height) {
-	this.pos = pos;
-	this.width = width;
-	this.height = height;
+function Brick(x, y, w, h) {
+	this.x = x;
+	this.y = y;
+	this.w = w;
+	this.h = h;
+	this.live = true;
+
+	this.rect = function() {
+		return new Rectangle(this.x, this.y, this.w, this.h);
+	}
 }
 
 function Paddle(startPos) {
 	var PADDLE_HEIGHT = 15;
-	var PADDLE_WIDTH = 40;
+	var PADDLE_WIDTH = 100;
 	var PADDLE_SPEED = 400;
 	this.pos = startPos;
 
@@ -181,16 +208,53 @@ function Field(width, height) {
 	this.width = width;
 	this.height = height;
 	this.bounds = [];
-	this.bounds.push(new Rectangle(-1000, -1000, 1000, height + 2000));
-	this.bounds.push(new Rectangle(-1000, -1000, width + 2000, 1000));
-	this.bounds.push(new Rectangle(width, -1000, 1000, height + 2000));
-	this.bounds.push(new Rectangle(-1000, height, width + 2000, 1000));
+	this.bounds.push(new FieldEdge(DIR.N, new Rectangle(-1000, -1000, 1000, height + 2000)));
+	this.bounds.push(new FieldEdge(DIR.W, new Rectangle(-1000, -1000, width + 2000, 1000)));
+	this.bounds.push(new FieldEdge(DIR.E, new Rectangle(width, -1000, 1000, height + 2000)));
+	this.bounds.push(new FieldEdge(DIR.S, new Rectangle(-1000, height, width + 2000, 1000)));
+
+	this.bricks = [];
+	var brickCols = 10;
+	var brickRows = 5;
+	var brickHeight = 15;
+	var brickWidth = (width-1) / brickCols;
+	for (var i = 0; i < brickCols; i++) {
+		for (var j = 0; j < brickRows; j++) {
+			this.bricks.push(new Brick(2 + i*brickWidth-1, 2 + j*brickHeight-1, brickWidth-1, brickHeight-1));
+		}
+	}
+
+	this.getLiveBricks = function() {
+		return this.bricks.filter(function (x) {return x.live});
+	}
+
 
 	Field.prototype.draw = function(ctx) {
 		ctx.save();
 		ctx.fillStyle="#F984EF";
 		ctx.fillRect(0, 0, this.width, this.height);
 		ctx.restore();
+		for (var i = 0; i < this.bricks.length; i++) {
+			var b = this.bricks[i];
+			if (b.live) {
+				ctx.fillRect(b.x, b.y, b.w, b.h);
+			} else {
+				ctx.save();
+				ctx.fillStyle="#F984EF";
+				ctx.fillRect(b.x, b.y, b.w, b.h);
+				ctx.restore();
+			}
+		}
+
+	}
+}
+
+function FieldEdge(direction, rect) {
+	this.r = rect;
+	this.direction = direction;
+
+	this.rect = function() {
+		return this.r;
 	}
 }
 
