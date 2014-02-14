@@ -78,11 +78,16 @@ function timeToCollision(movingRect, vector, stillRect) {
 		var xDistance = stillEdge.x1 - movingEdge.x1;
 		xTime = xDistance / vector.vx;
 	}
+	var res = {}
 	if (yTime === null) {
-		return xTime;
+		res.time = xTime;
+		res.direction = movingCollisionDirs.v;
+		return res;
 	}
 	if (xTime === null) {
-		return yTime;
+		res.time = yTime;
+		res.direction = movingCollisionDirs.h;
+		return res;
 	}
 
 
