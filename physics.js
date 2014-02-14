@@ -1,7 +1,36 @@
-var DIR = {W : "west",
+var DIRS = {W : "west",
 	N : "north",
 	E : "east",
 	S : "south"}
+
+var DIR = {W : new Direction(DIRS.W),
+	N : new Direction(DIRS.N),
+	E : new Direction(DIRS.E),
+	S : new Direction(DIRS.S)
+}
+
+function Direction(direction) {
+	this.direction = direction;
+	this.opposite = function() {
+		if (this.direction == DIRS.W) {
+			return new Direction(DIRS.E);
+		}
+		if (this.direction == DIRS.E) {
+			return new Direction(DIRS.W);
+		}
+		if (this.direction == DIRS.N) {
+			return new Direction(DIRS.S);
+		}
+		if (this.direction == DIRS.S) {
+			return new Direction(DIRS.N);
+		}
+	}
+
+	Direction.prototype.equals = function(other) {
+		return other.direction === this.direction;
+	}
+}
+
 
 function Rectangle(x, y, w, h) {
 	this.x = x;
@@ -10,13 +39,13 @@ function Rectangle(x, y, w, h) {
 	this.h = h;
 
 	Rectangle.prototype.getEdge = function(dir) {
-		if (dir === DIR.W) {
+		if (dir.equals(DIR.W)) {
 			return new Edge(this.x, this.y, this.x, this.y + this.h);
-		} else if (dir === DIR.N) {
+		} else if (dir.equals(DIR.N)) {
 			return new Edge(this.x, this.y, this.x + this.w, this.y);
-		} else if (dir === DIR.E) {
+		} else if (dir.equals(DIR.E)) {
 			return new Edge(this.x + this.w, this.y, this.x + this.w, this.y + this.h);
-		} else if (dir === DIR.S) {
+		} else if (dir.equals(DIR.S)) {
 			return new Edge(this.x, this.y + this.h, this.x + this.w, this.y + this.h);
 		}
 
@@ -28,6 +57,9 @@ function Edge(x1, y1, x2, y2) {
 	this.x2 = x2;
 	this.y1 = y1;
 	this.y2 = y2;
+}
+
+function collisionEdge(movingRect, vector, stillRect) {
 
 }
 

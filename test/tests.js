@@ -49,3 +49,12 @@ test ("cardinalDirection", function() {
 	deepEqual(new Vector(0,1).getCardinalDirections(), [DIR.S]);
 	deepEqual(new Vector(0,-1).getCardinalDirections(), [DIR.N]);
 });
+
+test ("oppositeDir", function() {
+	ok(DIR.W.opposite().equals(DIR.E));
+	ok(DIR.E.opposite().equals(DIR.W));
+	ok(DIR.N.opposite().equals(DIR.S));
+	ok(DIR.S.opposite().equals(DIR.N));
+
+//	equal(oppositeDir(DIR.E), DIR.W);
+});
