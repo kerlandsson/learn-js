@@ -10,7 +10,7 @@ var DIRECTION  = {
 	SOUTH: "south",
 	WEST: "west",
 	NORTH: "north"
-}
+};
 
 
 
@@ -23,7 +23,6 @@ addEventListener("keyup", function (e) {
 }, false);
 
 function Game(ctx) {
-	var ctx = ctx;
 	var field = new Field(GAME_WIDTH, GAME_HEIGHT);
 	var paddle = new Paddle(new Point(0, GAME_HEIGHT - 15)); // FIXME hardcoded paddle height :)
 	var ball = new Ball(new Point(50, GAME_HEIGHT - 50));
@@ -33,12 +32,12 @@ function Game(ctx) {
 		field.draw(ctx);
 		paddle.draw(ctx);
 		ball.draw(ctx);
-	}
+	};
 
 	var update = function(delta) {
 		movePaddleIfKeyDown(delta);	
 		moveBall(delta);
-	}
+	};
 
 	var moveBall = function(delta) {
 		// TODO breaks of paddle moves over ball
@@ -46,7 +45,7 @@ function Game(ctx) {
 		var allRects = field.bounds.slice(0);
 		allRects.push(paddle);
 		allRects = allRects.concat(field.getLiveBricks());
-		var possibleCollisionRects = allRects.filter(function(x) { return intersects(x.rect(), newPosRect) });
+		var possibleCollisionRects = allRects.filter(function(x) { return intersects(x.rect(), newPosRect); });
 		if (possibleCollisionRects.length > 0) {
 			var speedVector = ball.getSpeedVector();
 			var timesToCollisions = possibleCollisionRects.map(
@@ -62,7 +61,7 @@ function Game(ctx) {
 		} else {
 			ball.move(delta);
 		}
-	}
+	};
 
 	var collisionWith = function(collisionSpec) {
 		var speedVector = ball.getSpeedVector();
@@ -82,14 +81,14 @@ function Game(ctx) {
 			ball.changeSpeed(new Vector(-speedVector.vx, speedVector.vy));
 		}
 
-	}
+	};
 
 	var newPositionForBall = function(delta) {
 		var simulationBall = ball.createSimulationBall();
 		simulationBall.changeSpeed(ball.getSpeedVector());
 		simulationBall.move(delta);
 		return simulationBall.rect();
-	}
+	};
 
 	var movePaddleIfKeyDown = function(delta) {
 		paddleMovement = calculatePaddleMovement(delta);
@@ -103,7 +102,7 @@ function Game(ctx) {
 		}
 		paddle.move(paddleMovement);
 
-	}
+	};
 
 	var calculatePaddleMovement = function(delta) {
 		var paddleMovement = 0;
@@ -115,7 +114,7 @@ function Game(ctx) {
 			paddleMovement += (delta / 1000) * paddle.speed();	
 		}	
 		return paddleMovement;
-	}
+	};
 }
 
 function Ball(startPos) {
@@ -127,29 +126,29 @@ function Ball(startPos) {
 		ctx.beginPath();
 		ctx.arc(this.pos.x, this.pos.y, RADIUS, 0, Math.PI*2);
 		ctx.fill();
-	}
+	};
 
 	this.move = function(time) {
 		this.pos = new Point(this.pos.x + this.vector.vx * time, this.pos.y + this.vector.vy * time);
-	}
+	};
 
 	this.changeSpeed = function(speedVector) {
 		this.vector = speedVector; 
-	}
+	};
 
 	this.getSpeedVector = function() {
 		return this.vector;
-	}
+	};
 
 	this.rect = function() {
 		return new Rectangle(this.pos.x - RADIUS, this.pos.y - RADIUS, 2*RADIUS, 2*RADIUS);
-	}
+	};
 
 	this.createSimulationBall = function() {
 		var newBall = new Ball(this.pos);
 		newBall.changeSpeed(this.getSpeedVector());
 		return newBall;
-	}
+	};
 }
 
 function Brick(x, y, w, h) {
@@ -161,7 +160,7 @@ function Brick(x, y, w, h) {
 
 	this.rect = function() {
 		return new Rectangle(this.x, this.y, this.w, this.h);
-	}
+	};
 }
 
 function Paddle(startPos) {
@@ -173,25 +172,25 @@ function Paddle(startPos) {
 	// Positive for right, negative for left. No bounds checking.
 	Paddle.prototype.move = function(howFar) {
 		this.pos = this.peekMove(howFar);
-	}
+	};
 
 	// Returns the point the paddle would move to if move was called with this howFar value.
 	Paddle.prototype.peekMove = function(howFar) {
 		return new Point(this.pos.x + howFar, this.pos.y);
-	}
+	};
 
 
 	Paddle.prototype.draw = function(ctx) {
 		ctx.fillRect(this.pos.x, this.pos.y, PADDLE_WIDTH, PADDLE_HEIGHT);
-	}
+	};
 
 	Paddle.prototype.speed = function() {
 		return PADDLE_SPEED;
-	}
+	};
 	
 	Paddle.prototype.rect = function() {
 		return new Rectangle(this.pos.x, this.pos.y, PADDLE_WIDTH, PADDLE_HEIGHT);
-	}
+	};
 
 }
 
@@ -201,7 +200,7 @@ function Point(x, y) {
 
 	Point.prototype.toString = function() {
 		return x + "," + y;
-	}
+	};
 }
 
 function Field(width, height) {
@@ -225,8 +224,8 @@ function Field(width, height) {
 	}
 
 	this.getLiveBricks = function() {
-		return this.bricks.filter(function (x) {return x.live});
-	}
+		return this.bricks.filter(function (x) {return x.live;} );
+	};
 
 
 	Field.prototype.draw = function(ctx) {
@@ -246,7 +245,7 @@ function Field(width, height) {
 			}
 		}
 
-	}
+	};
 }
 
 function FieldEdge(direction, rect) {
@@ -255,7 +254,7 @@ function FieldEdge(direction, rect) {
 
 	this.rect = function() {
 		return this.r;
-	}
+	};
 }
 
 function setupCanvasContext() {
@@ -286,7 +285,7 @@ function tick(timestamp) {
 		}
 		game.tick(delta);
 	}
-	requestAnimationFrame(tick)
+	requestAnimationFrame(tick);
 }
 
 requestAnimationFrame(tick);

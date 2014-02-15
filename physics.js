@@ -1,13 +1,13 @@
 var DIRS = {W : "west",
 	N : "north",
 	E : "east",
-	S : "south"}
+	S : "south"};
 
 var DIR = {W : new Direction(DIRS.W),
 	N : new Direction(DIRS.N),
 	E : new Direction(DIRS.E),
 	S : new Direction(DIRS.S)
-}
+};
 
 function Direction(direction) {
 	this.direction = direction;
@@ -24,15 +24,15 @@ function Direction(direction) {
 		if (this.direction == DIRS.S) {
 			return new Direction(DIRS.N);
 		}
-	}
+	};
 
 	Direction.prototype.equals = function(other) {
 		return other.direction === this.direction;
-	}
+	};
 
 	Direction.prototype.isVertical = function() {
 		return this.direction == DIRS.N || this.direction == DIRS.S;
-	}
+	};
 }
 
 
@@ -52,7 +52,7 @@ function Rectangle(x, y, w, h) {
 		} else if (dir.equals(DIR.S)) {
 			return new Edge(this.x, this.y + this.h, this.x + this.w, this.y + this.h);
 		}
-	}
+	};
 }
 
 function Edge(x1, y1, x2, y2) {
@@ -63,7 +63,7 @@ function Edge(x1, y1, x2, y2) {
 
 	Edge.prototype.isVerticalEdge = function() {
 		return this.x1 === this.x2;
-	}
+	};
 }
 
 function timeToCollision(movingRect, vector, stillRect) {
@@ -88,7 +88,7 @@ function timeToCollision(movingRect, vector, stillRect) {
 			xTime = Infinity;
 		}
 	}
-	var res = {}
+	var res = {};
 	if (yTime < xTime) {
 		res.time = yTime;
 		res.direction = movingCollisionDirs.h;
@@ -123,11 +123,11 @@ function Vector(vx, vy) {
 			directions.h = DIR.N;
 		}
 		return directions;
-	}
+	};
 
 	Vector.prototype.magnitude = function() {
 		return Math.sqrt(vx * vx + vy * vy);
-	}
+	};
 
 
 }
