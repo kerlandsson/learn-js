@@ -70,36 +70,11 @@ function Edge(x1, y1, x2, y2) {
 	};
 }
 
+// Throws error in case rectangles never collide
 function timeToCollision(movingRect, vector, stillRect) {
-	var movingCollisionDirs = vector.getCardinalDirections();
-	var xTime = Infinity;
-	var yTime = Infinity;
-	if (movingCollisionDirs.h !== undefined) {
-		var movingEdge = movingRect.getEdge(movingCollisionDirs.h);
-		var stillEdge = stillRect.getEdge(movingCollisionDirs.h.opposite());
-		var yDistance = stillEdge.y1 - movingEdge.y1;
-		yTime = yDistance / vector.vy;
-		if (yTime < 0) {
-			yTime = Infinity;
-		}
-	}
-	if (movingCollisionDirs.v !== undefined) {
-		movingEdge = movingRect.getEdge(movingCollisionDirs.v);
-		stillEdge = stillRect.getEdge(movingCollisionDirs.v.opposite());
-		var xDistance = stillEdge.x1 - movingEdge.x1;
-		xTime = xDistance / vector.vx;
-		if (xTime < 0) {
-			xTime = Infinity;
-		}
-	}
-	var res = {};
-	if (yTime < xTime) {
-		res.time = yTime;
-		res.direction = movingCollisionDirs.h;
-		return res;
-	}
-	res.time = xTime;
-	res.direction = movingCollisionDirs.v;
+	var yTime = calculateYTimeToCollision(movingRect, vector, stillRect);
+	var xTime = calculateXTimeToCollision(movingRect, vector, stillRect);
+	var res = calculateCollisionTimeAndDirection(vector, yTime, xTime);
 	if (res.direction === undefined) {
 		throw "could not determine collision direction";
 	}
@@ -108,6 +83,49 @@ function timeToCollision(movingRect, vector, stillRect) {
 	}
 
 	return res;
+}
+
+function calculateCollisionTimeAndDirection(vector, yTime, xTime) {
+	var res = {};
+	if (yTime < xTime) {
+		res.time = yTime;
+		res.direction = vector.getCardinalDirections().h;
+	} else {
+		res.time = xTime;
+		res.direction = vector.getCardinalDirections().v;	
+	}
+	return res;
+}
+
+function calculateXTimeToCollision(movingRect, vector, stillRect) {
+	var movingCollisionDirs = vector.getCardinalDirections();
+	if (movingCollisionDirs.v === undefined) {
+		return Infinity;
+	}
+	var movingEdge = movingRect.getEdge(movingCollisionDirs.v);
+	var stillEdge = stillRect.getEdge(movingCollisionDirs.v.opposite());
+	var xDistance = stillEdge.x1 - movingEdge.x1;
+	var xTime = xDistance / vector.vx;
+	if (xTime < 0) {
+		xTime = Infinity;
+	}
+	return xTime;
+}
+
+function calculateYTimeToCollision(movingRect, vector, stillRect,
+		movingCollisionDirs) {
+	var movingCollisionDirs = vector.getCardinalDirections();
+	if (movingCollisionDirs.h === undefined) {
+		return Infinity;
+	}
+	var movingEdge = movingRect.getEdge(movingCollisionDirs.h);
+	var stillEdge = stillRect.getEdge(movingCollisionDirs.h.opposite());
+	var yDistance = stillEdge.y1 - movingEdge.y1;
+	var yTime = yDistance / vector.vy;
+	if (yTime < 0) {
+		yTime = Infinity;
+	}
+	return yTime;
 }
 
 function Vector(vx, vy) {
