@@ -5,26 +5,27 @@ var GAME_WIDTH = 500;
 
 var keysDown = {};
 
-var DIRECTION  = {
-	EAST: "east",
-	SOUTH: "south",
-	WEST: "west",
-	NORTH: "north"
+var DIRECTION = {
+	EAST : "east",
+	SOUTH : "south",
+	WEST : "west",
+	NORTH : "north"
 };
 
-
-
-addEventListener("keydown", function (e) {
+addEventListener("keydown", function(e) {
 	keysDown[e.keyCode] = true;
 }, false);
 
-addEventListener("keyup", function (e) {
+addEventListener("keyup", function(e) {
 	delete keysDown[e.keyCode];
 }, false);
 
 function Game(ctx) {
 	var field = new Field(GAME_WIDTH, GAME_HEIGHT);
-	var paddle = new Paddle(new Point(0, GAME_HEIGHT - 15)); // FIXME hardcoded paddle height :)
+	var paddle = new Paddle(new Point(0, GAME_HEIGHT - 15)); // FIXME
+																// hardcoded
+																// paddle height
+																// :)
 	var ball = new Ball(new Point(50, GAME_HEIGHT - 50));
 
 	this.tick = function(delta) {
@@ -35,7 +36,7 @@ function Game(ctx) {
 	};
 
 	var update = function(delta) {
-		movePaddleIfKeyDown(delta);	
+		movePaddleIfKeyDown(delta);
 		moveBall(delta);
 	};
 
@@ -45,16 +46,19 @@ function Game(ctx) {
 		var allRects = field.bounds.slice(0);
 		allRects.push(paddle);
 		allRects = allRects.concat(field.getLiveBricks());
-		var possibleCollisionRects = allRects.filter(function(x) { return intersects(x.rect(), newPosRect); });
+		var possibleCollisionRects = allRects.filter(function(x) {
+			return intersects(x.rect(), newPosRect);
+		});
 		if (possibleCollisionRects.length > 0) {
 			var speedVector = ball.getSpeedVector();
-			var timesToCollisions = possibleCollisionRects.map(
-					function(x) {
-						var ttc = timeToCollision(ball.rect(), speedVector, x.rect());
-						ttc.obj = x;
-						return ttc;
-					});
-			timesToCollisions.sort(function(a, b) {return b.time - a.time; });
+			var timesToCollisions = possibleCollisionRects.map(function(x) {
+				var ttc = timeToCollision(ball.rect(), speedVector, x.rect());
+				ttc.obj = x;
+				return ttc;
+			});
+			timesToCollisions.sort(function(a, b) {
+				return b.time - a.time;
+			});
 			var closestCollision = timesToCollisions.pop();
 			ball.move(closestCollision.time);
 			collisionWith(closestCollision);
@@ -107,12 +111,12 @@ function Game(ctx) {
 	var calculatePaddleMovement = function(delta) {
 		var paddleMovement = 0;
 		if (KEY_LEFT in keysDown) {
-			paddleMovement -= (delta / 1000) * paddle.speed();	
+			paddleMovement -= (delta / 1000) * paddle.speed();
 
 		}
 		if (KEY_RIGHT in keysDown) {
-			paddleMovement += (delta / 1000) * paddle.speed();	
-		}	
+			paddleMovement += (delta / 1000) * paddle.speed();
+		}
 		return paddleMovement;
 	};
 }
@@ -124,16 +128,17 @@ function Ball(startPos) {
 
 	this.draw = function(ctx) {
 		ctx.beginPath();
-		ctx.arc(this.pos.x, this.pos.y, RADIUS, 0, Math.PI*2);
+		ctx.arc(this.pos.x, this.pos.y, RADIUS, 0, Math.PI * 2);
 		ctx.fill();
 	};
 
 	this.move = function(time) {
-		this.pos = new Point(this.pos.x + this.vector.vx * time, this.pos.y + this.vector.vy * time);
+		this.pos = new Point(this.pos.x + this.vector.vx * time, this.pos.y
+				+ this.vector.vy * time);
 	};
 
 	this.changeSpeed = function(speedVector) {
-		this.vector = speedVector; 
+		this.vector = speedVector;
 	};
 
 	this.getSpeedVector = function() {
@@ -141,7 +146,8 @@ function Ball(startPos) {
 	};
 
 	this.rect = function() {
-		return new Rectangle(this.pos.x - RADIUS, this.pos.y - RADIUS, 2*RADIUS, 2*RADIUS);
+		return new Rectangle(this.pos.x - RADIUS, this.pos.y - RADIUS,
+				2 * RADIUS, 2 * RADIUS);
 	};
 
 	this.createSimulationBall = function() {
@@ -174,11 +180,11 @@ function Paddle(startPos) {
 		this.pos = this.peekMove(howFar);
 	};
 
-	// Returns the point the paddle would move to if move was called with this howFar value.
+	// Returns the point the paddle would move to if move was called with this
+	// howFar value.
 	Paddle.prototype.peekMove = function(howFar) {
 		return new Point(this.pos.x + howFar, this.pos.y);
 	};
-
 
 	Paddle.prototype.draw = function(ctx) {
 		ctx.fillRect(this.pos.x, this.pos.y, PADDLE_WIDTH, PADDLE_HEIGHT);
@@ -187,9 +193,10 @@ function Paddle(startPos) {
 	Paddle.prototype.speed = function() {
 		return PADDLE_SPEED;
 	};
-	
+
 	Paddle.prototype.rect = function() {
-		return new Rectangle(this.pos.x, this.pos.y, PADDLE_WIDTH, PADDLE_HEIGHT);
+		return new Rectangle(this.pos.x, this.pos.y, PADDLE_WIDTH,
+				PADDLE_HEIGHT);
 	};
 
 }
@@ -207,30 +214,36 @@ function Field(width, height) {
 	this.width = width;
 	this.height = height;
 	this.bounds = [];
-	this.bounds.push(new FieldEdge(DIR.N, new Rectangle(-1000, -1000, 1000, height + 2000)));
-	this.bounds.push(new FieldEdge(DIR.W, new Rectangle(-1000, -1000, width + 2000, 1000)));
-	this.bounds.push(new FieldEdge(DIR.E, new Rectangle(width, -1000, 1000, height + 2000)));
-	this.bounds.push(new FieldEdge(DIR.S, new Rectangle(-1000, height, width + 2000, 1000)));
+	this.bounds.push(new FieldEdge(DIR.N, new Rectangle(-1000, -1000, 1000,
+			height + 2000)));
+	this.bounds.push(new FieldEdge(DIR.W, new Rectangle(-1000, -1000,
+			width + 2000, 1000)));
+	this.bounds.push(new FieldEdge(DIR.E, new Rectangle(width, -1000, 1000,
+			height + 2000)));
+	this.bounds.push(new FieldEdge(DIR.S, new Rectangle(-1000, height,
+			width + 2000, 1000)));
 
 	this.bricks = [];
 	var brickCols = 10;
 	var brickRows = 5;
 	var brickHeight = 15;
-	var brickWidth = (width-1) / brickCols;
+	var brickWidth = (width - 1) / brickCols;
 	for (var i = 0; i < brickCols; i++) {
 		for (var j = 0; j < brickRows; j++) {
-			this.bricks.push(new Brick(2 + i*brickWidth-1, 2 + j*brickHeight-1, brickWidth-1, brickHeight-1));
+			this.bricks.push(new Brick(2 + i * brickWidth - 1, 2 + j
+					* brickHeight - 1, brickWidth - 1, brickHeight - 1));
 		}
 	}
 
 	this.getLiveBricks = function() {
-		return this.bricks.filter(function (x) {return x.live;} );
+		return this.bricks.filter(function(x) {
+			return x.live;
+		});
 	};
-
 
 	Field.prototype.draw = function(ctx) {
 		ctx.save();
-		ctx.fillStyle="#F984EF";
+		ctx.fillStyle = "#F984EF";
 		ctx.fillRect(0, 0, this.width, this.height);
 		ctx.restore();
 		for (var i = 0; i < this.bricks.length; i++) {
@@ -239,7 +252,7 @@ function Field(width, height) {
 				ctx.fillRect(b.x, b.y, b.w, b.h);
 			} else {
 				ctx.save();
-				ctx.fillStyle="#F984EF";
+				ctx.fillStyle = "#F984EF";
 				ctx.fillRect(b.x, b.y, b.w, b.h);
 				ctx.restore();
 			}
@@ -266,7 +279,6 @@ function setupCanvasContext() {
 	return canvas.getContext("2d");
 }
 
-
 var game = new Game(setupCanvasContext());
 
 var lastTickAt = null;
@@ -289,4 +301,3 @@ function tick(timestamp) {
 }
 
 requestAnimationFrame(tick);
-

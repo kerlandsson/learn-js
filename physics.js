@@ -1,9 +1,12 @@
-var DIRS = {W : "west",
+var DIRS = {
+	W : "west",
 	N : "north",
 	E : "east",
-	S : "south"};
+	S : "south"
+};
 
-var DIR = {W : new Direction(DIRS.W),
+var DIR = {
+	W : new Direction(DIRS.W),
 	N : new Direction(DIRS.N),
 	E : new Direction(DIRS.E),
 	S : new Direction(DIRS.S)
@@ -35,7 +38,6 @@ function Direction(direction) {
 	};
 }
 
-
 function Rectangle(x, y, w, h) {
 	this.x = x;
 	this.y = y;
@@ -48,9 +50,11 @@ function Rectangle(x, y, w, h) {
 		} else if (dir.equals(DIR.N)) {
 			return new Edge(this.x, this.y, this.x + this.w, this.y);
 		} else if (dir.equals(DIR.E)) {
-			return new Edge(this.x + this.w, this.y, this.x + this.w, this.y + this.h);
+			return new Edge(this.x + this.w, this.y, this.x + this.w, this.y
+					+ this.h);
 		} else if (dir.equals(DIR.S)) {
-			return new Edge(this.x, this.y + this.h, this.x + this.w, this.y + this.h);
+			return new Edge(this.x, this.y + this.h, this.x + this.w, this.y
+					+ this.h);
 		}
 	};
 }
@@ -129,13 +133,9 @@ function Vector(vx, vy) {
 		return Math.sqrt(vx * vx + vy * vy);
 	};
 
-
 }
 
 function intersects(r1, r2) {
-        return r1.x <= r2.x + r2.w
-                        && r1.x + r1.w >= r2.x
-                        && r1.y <= r2.y + r2.h
-                        && r1.y + r1.h >= r2.y;
+	return r1.x <= r2.x + r2.w && r1.x + r1.w >= r2.x && r1.y <= r2.y + r2.h
+			&& r1.y + r1.h >= r2.y;
 }
-
