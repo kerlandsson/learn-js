@@ -228,12 +228,7 @@ function Field(width, height) {
 	var brickRows = 5;
 	var brickHeight = 15;
 	var brickWidth = (width - 1) / brickCols;
-	for (var i = 0; i < brickCols; i++) {
-		for (var j = 0; j < brickRows; j++) {
-			this.bricks.push(new Brick(2 + i * brickWidth - 1, 2 + j
-					* brickHeight - 1, brickWidth - 1, brickHeight - 1));
-		}
-	}
+	createBricks(this.bricks, brickCols, brickRows, brickHeight, brickWidth);
 
 	this.getLiveBricks = function() {
 		return this.bricks.filter(function(x) {
@@ -259,6 +254,15 @@ function Field(width, height) {
 		}
 
 	};
+}
+
+function createBricks(bricks, brickCols, brickRows, brickHeight, brickWidth) {
+	for (var i = 0; i < brickCols; i++) {
+		for (var j = 0; j < brickRows; j++) {
+			bricks.push(new Brick(2 + i * brickWidth - 1, 2 + j
+					* brickHeight - 1, brickWidth - 1, brickHeight - 1));
+		}
+	}
 }
 
 function FieldEdge(direction, rect) {
@@ -290,14 +294,18 @@ function tick(timestamp) {
 	this.lastTickAt = timestamp;
 	// If too much time has passed, start over to avoid queing up too much
 	if (delta < 1000) {
-		var minTick = 40;
-		while (delta > minTick) {
-			game.tick(minTick);
-			delta = delta - minTick;
-		}
-		game.tick(delta);
+		doTicks(delta);
 	}
 	requestAnimationFrame(tick);
+}
+
+function doTicks(delta) {
+	var minTick = 40;
+	while (delta > minTick) {
+		game.tick(minTick);
+		delta = delta - minTick;
+	}
+	game.tick(delta);
 }
 
 requestAnimationFrame(tick);
