@@ -1,3 +1,8 @@
+// TODO
+// * Refactor ball collision detection (put more collide logic in physics, make ball a square but render as circle)
+// * Handle collisions between paddle and ball better (paddle moves over ball)
+// * Move rendering code to separate function, not in the objects
+
 var KEY_LEFT = 37;
 var KEY_RIGHT = 39;
 var GAME_HEIGHT = 375;
