@@ -27,7 +27,7 @@ addEventListener("keyup", function(e) {
 
 function Game(ctx) {
 	var field = new Field(GAME_WIDTH, GAME_HEIGHT);
-	var paddle = new Paddle(new Point(0, GAME_HEIGHT - 15)); // FIXME
+	var paddle = new Paddle(new Point(0, GAME_HEIGHT - 8)); // FIXME
 																// hardcoded
 																// paddle height
 																// :)
@@ -175,7 +175,7 @@ function Brick(x, y, w, h) {
 }
 
 function Paddle(startPos) {
-	var PADDLE_HEIGHT = 15;
+	var PADDLE_HEIGHT = 8;
 	var PADDLE_WIDTH = 100;
 	var PADDLE_SPEED = 400;
 	this.pos = startPos;
