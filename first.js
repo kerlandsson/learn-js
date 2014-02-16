@@ -279,16 +279,7 @@ function FieldEdge(direction, rect) {
 	};
 }
 
-function setupCanvasContext() {
-	var canvas = document.createElement("canvas");
-	canvas.width = GAME_WIDTH;
-	canvas.height = GAME_HEIGHT;
-	canvas.style.border = "1px solid";
-	document.body.appendChild(canvas);
-	return canvas.getContext("2d");
-}
-
-var game = new Game(setupCanvasContext());
+var game = new Game(setupCanvasContext(GAME_WIDTH, GAME_HEIGHT));
 
 var t = new Ticker(game.tick, function() { requestAnimationFrame(t.tick); });
 requestAnimationFrame(t.tick);
