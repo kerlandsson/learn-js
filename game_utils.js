@@ -1,7 +1,15 @@
+function require(o) {
+	if (o === null || o === undefined) {
+		throw "object must be defined";
+	}
+}
+
 function Ticker(tickFunc, ticksDoneCallback) {
+	require(tickFunc);
 	var lastTickAt = null;
 	
 	this.tick = function(timestamp) {
+		require(timestamp);
 		if (!lastTickAt) {
 			lastTickAt = timestamp;
 		}
