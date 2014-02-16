@@ -290,27 +290,5 @@ function setupCanvasContext() {
 
 var game = new Game(setupCanvasContext());
 
-var lastTickAt = null;
-function tick(timestamp) {
-	if (!this.lastTickAt) {
-		this.lastTickAt = timestamp;
-	}
-	var delta = timestamp - lastTickAt;
-	this.lastTickAt = timestamp;
-	// If too much time has passed, start over to avoid queing up too much
-	if (delta < 1000) {
-		doTicks(delta);
-	}
-	requestAnimationFrame(tick);
-}
-
-function doTicks(delta) {
-	var minTick = 40;
-	while (delta > minTick) {
-		game.tick(minTick);
-		delta = delta - minTick;
-	}
-	game.tick(delta);
-}
-
-requestAnimationFrame(tick);
+var t = new Ticker(game.tick, function() { requestAnimationFrame(t.tick); });
+requestAnimationFrame(t.tick);
