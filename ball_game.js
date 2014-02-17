@@ -8,7 +8,9 @@ var CONFIG = { GAME_WIDTH: 700,
 function BallGame() {
 	this.field = new Field(CONFIG.GAME_WIDTH, CONFIG.GAME_HEIGHT);
 	this.ball = new Ball(CONFIG.BALL_RADIUS);
-	this.ball.move(50 + this.ball.getRadius(), this.field.getHeight() - 50 - this.ball.getRadius());
+	this.ball.setPosition(50 + this.ball.getRadius(), this.field.getHeight() - 50 - this.ball.getRadius());
+	this.ball.setSpeed(new Vector(0.3, -0.3));
+	this.gravity = 0.00025;
 }
 
 BallGame.prototype.getField = function() {
@@ -20,7 +22,8 @@ BallGame.prototype.getBall = function() {
 };
 
 BallGame.prototype.tick = function(delta) {
-	
+	this.ball.move(delta);
+	this.ball.addYSpeed(this.gravity * delta);
 };
 
 //-----------------------------------------------------------------------------
@@ -29,9 +32,10 @@ function Ball(radius) {
 	this.radius = radius;
 	this.x = 0;
 	this.y = 0;
+	this.speed = new Vector(0, 0);
 }
 
-Ball.prototype.move = function(x, y) {
+Ball.prototype.setPosition = function(x, y) {
 	require(x);
 	require(y);
 	this.x = x;
@@ -48,6 +52,27 @@ Ball.prototype.getX = function() {
 
 Ball.prototype.getY = function() {
 	return this.y;
+};
+
+Ball.prototype.setSpeed = function(newSpeed) {
+	require(newSpeed);
+	this.speed = newSpeed;
+};
+
+Ball.prototype.addYSpeed = function(amount) {
+	require(amount);
+	this.speed = new Vector(this.speed.vx, this.speed.vy + amount);
+};
+
+Ball.prototype.getSpeed = function() {
+	return this.speed;
+};
+
+Ball.prototype.move = function(time) {
+	require(time);
+	var newX = this.getX() + this.speed.vx * time;
+	var newY = this.getY() + this.speed.vy * time;
+	this.setPosition(newX, newY);
 };
 
 //-----------------------------------------------------------------------------
@@ -98,18 +123,43 @@ BallGameRenderer.prototype.renderBall = function() {
 		var x = ball.getX();
 		var y = ball.getY();
 		var radius = ball.getRadius();
-		if (this.ballHasMoved(x, y, radius)) {
-			this.ctx.beginPath();
-			this.ctx.arc(x, y, radius, 0, Math.PI * 2);
-			this.ctx.fill();
+		if (this.ballFirstTime() || this.ballHasMoved(x, y, radius)) {
+			if (!this.ballFirstTime()) {
+				// TODO need better clear logic since we have to use +1 here due to
+				// antialiasing leaving tracks otherwise
+				drawColoredCircle(this.ctx, CONFIG.BGCOLOR, this.lastBallRender.x,
+					this.lastBallRender.y, this.lastBallRender.radius + 1);
+			}
+			drawCircle(this.ctx, x, y, radius);
 			this.lastBallRender = {x: x, y: y, radius: radius};
 		}
 };
+
 BallGameRenderer.prototype.ballHasMoved = function(x, y, radius) {
-	if (this.lastBallRender == null) return true;
 	return  this.lastBallRender.x !== x || this.lastBallRender.y !== y
 		|| this.lastBallRender.radius !== radius;
 };
+
+BallGameRenderer.prototype.ballFirstTime = function() {
+	return this.lastBallRender === null;
+};
+
+// ---------------------------------------------------------------------------------------------------
+
+function drawColoredCircle(ctx, color, x, y, radius) {
+	ctx.save();
+	ctx.fillStyle = color;
+	drawCircle(ctx, x, y, radius);
+	ctx.restore();
+}
+
+function drawCircle(ctx, x, y, radius) {
+	ctx.beginPath();
+	ctx.arc(x, y, radius, 0, Math.PI * 2);
+	ctx.fill();
+}
+
+// ---------------------------------------------------------------------------------------------------
 
 var game = new BallGame();
 var renderer = new BallGameRenderer(setupCanvasContext(CONFIG.GAME_WIDTH, CONFIG.GAME_HEIGHT), game);
@@ -119,5 +169,9 @@ function renderAndRequestNewFrame() {
 	requestAnimationFrame(t.tick);
 }
 
-var t = new Ticker(game.tick, renderAndRequestNewFrame);
+function tickGame(delta) {
+	game.tick(delta);
+}
+
+var t = new Ticker(tickGame, renderAndRequestNewFrame);
 renderAndRequestNewFrame();
