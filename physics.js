@@ -59,6 +59,22 @@ function Rectangle(x, y, w, h) {
 	};
 }
 
+Rectangle.prototype.getX = function() {
+	return this.x;
+};
+
+Rectangle.prototype.getY = function() {
+	return this.y;
+};
+
+Rectangle.prototype.getH = function() {
+	return this.h;
+};
+
+Rectangle.prototype.getW = function() {
+	return this.w;
+};
+
 function Edge(x1, y1, x2, y2) {
 	this.x1 = x1;
 	this.x2 = x2;
@@ -128,30 +144,33 @@ function calculateYTimeToCollision(movingRect, vector, stillRect,
 	return yTime;
 }
 
+// ----------------------------------------------------------------------------------------
+
 function Vector(vx, vy) {
 	this.vx = vx;
 	this.vy = vy;
-
-	Vector.prototype.getCardinalDirections = function() {
-		var directions = {};
-		if (this.vx > 0) {
-			directions.v = DIR.E;
-		} else if (this.vx < 0) {
-			directions.v = DIR.W;
-		}
-		if (this.vy > 0) {
-			directions.h = DIR.S;
-		} else if (this.vy < 0) {
-			directions.h = DIR.N;
-		}
-		return directions;
-	};
-
-	Vector.prototype.magnitude = function() {
-		return Math.sqrt(vx * vx + vy * vy);
-	};
-
 }
+
+Vector.prototype.getCardinalDirections = function() {
+	var directions = {};
+	if (this.vx > 0) {
+		directions.v = DIR.E;
+	} else if (this.vx < 0) {
+		directions.v = DIR.W;
+	}
+	if (this.vy > 0) {
+		directions.h = DIR.S;
+	} else if (this.vy < 0) {
+		directions.h = DIR.N;
+	}
+	return directions;
+};
+
+Vector.prototype.magnitude = function() {
+	return Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+};
+
+//----------------------------------------------------------------------------------------
 
 function intersects(r1, r2) {
 	return r1.x <= r2.x + r2.w && r1.x + r1.w >= r2.x && r1.y <= r2.y + r2.h
