@@ -26,17 +26,27 @@ function RectangleEntity(x, y, halfWidth, halfHeight, angle) {
 RectangleEntity.prototype = new Entity();
 RectangleEntity.prototype.constructor = RectangleEntity;
 
+function CircleEntity(x, y, radius, angle) {
+	Entity.call(this, x, y, angle);
+	this.radius = radius;
+}
+
+CircleEntity.prototype = new Entity();
+CircleEntity.prototype.constructor = CircleEntity;
+
 function Game() {
 	this.pw = new PhysicsWorld(0, 10);
 	var myRect = new RectangleEntity(3, 3, 2, 2, Math.PI / 9);
 	var ground = new RectangleEntity(0, 9.8, 20, 0.2);
 	var obstacle = new RectangleEntity(2, 9.5, 0.3, 1);
+	var ball = new CircleEntity(8, 3, 0.4);
 
 	this.pw.addBody(myRect, {type: BODY_TYPE.DYNAMIC});
 	this.pw.addBody(ground, {type: BODY_TYPE.STATIC});
 	this.pw.addBody(obstacle, {type: BODY_TYPE.DYNAMIC});
+	this.pw.addBody(ball, {type: BODY_TYPE.DYNAMIC, angularDamping:2});
 
-	this.bodies = [myRect, ground, obstacle];
+	this.bodies = [myRect, ground, obstacle, ball];
 }
 
 Game.prototype.tick = function(delta) {
@@ -61,6 +71,8 @@ GameRenderer.prototype.render = function() {
 GameRenderer.prototype.drawBody = function(body) {
 	if (body instanceof RectangleEntity) {
 		this.drawRectangle(body);
+	} if (body instanceof CircleEntity) {
+		this.drawCircle(body);
 	}
 };
 
@@ -73,6 +85,18 @@ GameRenderer.prototype.drawRectangle = function(rect) {
 	ctx.fillRect((rect.x - rect.halfWidth) * this.scale, (rect.y - rect.halfHeight)
 			* this.scale, (rect.halfWidth * 2) * this.scale, (rect.halfHeight * 2)
 			* this.scale);
+	ctx.restore();
+};
+
+GameRenderer.prototype.drawCircle = function(circle) {
+	ctx.save();
+//	ctx.translate(circle.x * this.scale, circle.y * this.scale);
+//	ctx.rotate(circle.angle);
+//	ctx.translate(-(circle.x) * this.scale, -(circle.y) * this.scale);
+    ctx.beginPath();
+    ctx.arc(circle.x * this.scale, circle.y * this.scale, circle.radius * this.scale, 0, Math.PI * 2, true);
+    ctx.closePath();
+    ctx.fill();
 	ctx.restore();
 };
 
