@@ -2,13 +2,9 @@ var CONFIG = {
 	GAME_WIDTH : 600,
 	GAME_HEIGHT : 300,
 	BGCOLOR : "#00bfff",
-	BALL_RADIUS : 5
+	BALL_RADIUS : 5,
+	DRAW_SCALE : 30
 };
-
-
-var SCALE = 30;
-
-
 
 function Entity(x, y, angle) {
 	this.x = x;
@@ -30,40 +26,54 @@ function RectangleEntity(x, y, halfWidth, halfHeight, angle) {
 RectangleEntity.prototype = new Entity();
 RectangleEntity.prototype.constructor = RectangleEntity;
 
-RectangleEntity.prototype.draw = function(ctx) {
-	ctx.save();
-	ctx.translate(this.x * SCALE, this.y * SCALE);
-	ctx.rotate(this.angle);
-	ctx.translate(-(this.x) * SCALE, -(this.y) * SCALE);
-	ctx.fillStyle = 'red';
-	ctx.fillRect((this.x - this.halfWidth) * SCALE, (this.y - this.halfHeight)
-			* SCALE, (this.halfWidth * 2) * SCALE, (this.halfHeight * 2)
-			* SCALE);
-	ctx.restore();
-
-//	Entity.prototype.draw.call(this, ctx);
-};
-
 function Game() {
+	this.pw = new PhysicsWorld(0, 10);
+	var myRect = new RectangleEntity(3, 3, 2, 2, Math.PI / 9);
+	var ground = new RectangleEntity(0, 9.8, 20, 0.2);
+	var obstacle = new RectangleEntity(2, 9.5, 0.3, 1);
 
+	this.pw.addBody(myRect, {type: BODY_TYPE.DYNAMIC});
+	this.pw.addBody(ground, {type: BODY_TYPE.STATIC});
+	this.pw.addBody(obstacle, {type: BODY_TYPE.DYNAMIC});
+
+	this.bodies = [myRect, ground, obstacle];
 }
 
 Game.prototype.tick = function(delta) {
-
+	this.pw.step(delta);
 };
 
-function GameRenderer(ctx) {
+function GameRenderer(ctx, game, drawScale) {
 	this.ctx = ctx;
+	this.game = game;
+	this.scale = drawScale;
 }
-
-var objects = [];
 
 GameRenderer.prototype.render = function() {
 	this.ctx.clearRect(0, 0, CONFIG.GAME_WIDTH, CONFIG.GAME_HEIGHT);
 	//world.DrawDebugData();
-	for (var i = 0; i < objects.length; i++) {
-		objects[i].draw(this.ctx);
+	var bodies = this.game.bodies;
+	for (var i = 0; i < bodies.length; i++) {
+		this.drawBody(bodies[i]);
 	}
+};
+
+GameRenderer.prototype.drawBody = function(body) {
+	if (body instanceof RectangleEntity) {
+		this.drawRectangle(body);
+	}
+};
+
+GameRenderer.prototype.drawRectangle = function(rect) {
+	ctx.save();
+	ctx.translate(rect.x * this.scale, rect.y * this.scale);
+	ctx.rotate(rect.angle);
+	ctx.translate(-(rect.x) * this.scale, -(rect.y) * this.scale);
+	//ctx.fillStyle = 'red';
+	ctx.fillRect((rect.x - rect.halfWidth) * this.scale, (rect.y - rect.halfHeight)
+			* this.scale, (rect.halfWidth * 2) * this.scale, (rect.halfHeight * 2)
+			* this.scale);
+	ctx.restore();
 };
 
 var ctx = setupCanvasContext(CONFIG.GAME_WIDTH, CONFIG.GAME_HEIGHT);
@@ -78,34 +88,17 @@ function enableDebugDraw() {
 	world.SetDebugDraw(debugDraw);
 }
 
-var renderer = new GameRenderer(ctx);
 var game = new Game();
+var renderer = new GameRenderer(ctx, game, CONFIG.DRAW_SCALE);
 
 function renderAndRequestNewFrame() {
 	renderer.render();
 	requestAnimationFrame(t.tick);
 }
 
-
-var pw = new PhysicsWorld(0, 10);
-
 function tickGame(delta) {
-	pw.step(delta);
 	game.tick(delta);
 }
-
-var myRect = new RectangleEntity(3, 3, 2, 2, Math.PI / 9);
-var ground = new RectangleEntity(0, 9.8, 20, 0.2);
-var obstacle = new RectangleEntity(2, 9.5, 0.3, 1);
-
-pw.addBody(myRect, {type: BODY_TYPE.DYNAMIC});
-pw.addBody(ground, {type: BODY_TYPE.STATIC});
-pw.addBody(obstacle, {type: BODY_TYPE.DYNAMIC});
-
-objects.push(myRect);
-objects.push(ground);
-objects.push(obstacle);
-
 
 var t = new Ticker(tickGame, renderAndRequestNewFrame);
 renderAndRequestNewFrame();
